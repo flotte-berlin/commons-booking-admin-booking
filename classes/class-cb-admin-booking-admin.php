@@ -50,22 +50,22 @@ class CB_Admin_Booking_Admin {
     $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
 
     if(!in_array($data['item_id'], $this->valid_cb_item_ids)) {
-      $errors[] = __('ARTICEL_INVALID', 'commons-booking-admin-booking');
+      $errors[] = ___('ITEM_INVALID', 'commons-booking-admin-booking', 'invalid item');
     }
 
     if(!in_array($data['user_id'], $this->valid_user_ids)) {
-      $errors[] = __('USER_INVALID', 'commons-booking-admin-booking');
+      $errors[] = ___('USER_INVALID', 'commons-booking-admin-booking', 'invalid user');
     }
 
     if(!$data['date_start_valid']) {
-      $errors[] = __('START_DATE_INVALID', 'commons-booking-admin-booking');
+      $errors[] = ___('START_DATE_INVALID', 'commons-booking-admin-booking', 'invalid start date');
     }
     else {
       $data['date_start'] = $_REQUEST['date_start'];
     }
 
     if(!$data['date_end_valid']) {
-      $errors[] = __('END_DATE_INVALID', 'commons-booking-admin-booking');
+      $errors[] = ___('END_DATE_INVALID', 'commons-booking-admin-booking', 'invalid end date');
     }
     else {
       $data['date_end'] = $_REQUEST['date_end'];
@@ -87,7 +87,7 @@ class CB_Admin_Booking_Admin {
     $send_mail = $data['send_mail'];
 
     if( strtotime($date_start) > strtotime($date_end)) {
-      $message = __('START_DATE_AFTER_END_DATE', 'commons-booking-admin-booking');
+      $message = ___('START_DATE_AFTER_END_DATE', 'commons-booking-admin-booking', 'end date must be after start date');
       $class = 'notice notice-error';
       echo '<div class="' . $class .'"><p>' . $message . '</p></div>';
       return false;
@@ -112,14 +112,14 @@ class CB_Admin_Booking_Admin {
           $booking_id = $this->create_booking($date_start, $date_end, $item_id, $user_id, 'confirmed', $location_id, $send_mail);
 
           if($booking_id) {
-            $message = __('BOOKING_CREATED', 'commons-booking-admin-booking');
+            $message = ___('BOOKING_CREATED', 'commons-booking-admin-booking', 'The booking was created successfully.');
             $message .= $send_mail ? ' Eine Bestätigungsmail wurde versandt.' : '';
             $class = 'notice notice-success';
             echo '<div id="message" class="' . $class .'"><p>' . $message . '</p></div>';
             return true;
           }
           else {
-            $message = __('BOOKING_CREATION_ERROR', 'commons-booking-admin-booking');
+            $message = ___('BOOKING_CREATION_ERROR', 'commons-booking-admin-booking', 'An error occured while creating the booking.');
             $class = 'notice notice-error';
             echo '<div class="' . $class .'"><p>' . $message . '</p></div>';
             return false;
@@ -127,7 +127,7 @@ class CB_Admin_Booking_Admin {
 
         }
         else {
-          $message = __('ALREADY_BOOKING_IN_PERIOD', 'commons-booking-admin-booking');
+          $message = ___('ALREADY_BOOKING_IN_PERIOD', 'commons-booking-admin-booking', 'There is already a booking existing for the given item in the wanted period.');
           $class = 'notice notice-error';
           echo '<div class="' . $class .'"><p>' . $message . '</p></div>';
           return false;
@@ -141,7 +141,7 @@ class CB_Admin_Booking_Admin {
           $dates .= !$date_end_valid ? date("d.m.Y", strtotime($date_end)) : '';
         }
 
-        $message = sprintf(__('NO_BOOKING_FOR_CLOSED_DAYS', 'commons-booking-admin-booking'), $dates);
+        $message = sprintf(___('NO_BOOKING_FOR_CLOSED_DAYS', 'commons-booking-admin-booking', 'Start and end date must not fall on a day where the location is closed. (%s)'), $dates);
         $class = 'notice notice-error';
         echo '<div class="' . $class .'"><p>' . $message . '</p></div>';
         return false;
@@ -149,8 +149,7 @@ class CB_Admin_Booking_Admin {
 
     }
     else {
-
-      $message = __('NO_TIMEFRAME_AVAILABLE', 'commons-booking-admin-booking');
+      $message = ___('NO_TIMEFRAME_AVAILABLE', 'commons-booking-admin-booking', 'For the wanted booking no timeframe is existing yet - you have to create one first.');
       $class = 'notice notice-error';
       echo '<div id="message" class="' . $class .'"><p>' . $message . '</p></div>';
       return false;
@@ -171,7 +170,7 @@ class CB_Admin_Booking_Admin {
 
         if(count($validation_result['errors']) > 0) {
           $error_list = str_replace(',', ', ', implode(",", $validation_result['errors']));
-          $message = __('INPUT_ERRORS_OCCURED', 'commons-booking-admin-booking') . ': ' . $error_list;
+          $message = ___('INPUT_ERRORS_OCCURED', 'commons-booking-admin-booking', 'There are input erros in the request.') . ': ' . $error_list;
           $class = 'notice notice-error';
           echo '<div id="message" class="' . $class .'"><p>' . $message . '</p></div>';
 
@@ -210,8 +209,8 @@ class CB_Admin_Booking_Admin {
       include_once( CB_ADMIN_BOOKING_PATH . 'templates/bookings-template.php' );
     }
     else {
-      echo '<h3>' . __('CREATE_BOOKING', 'commons-booking-admin-booking') . '</h3>';
-      echo '<p>' . __('NO_LOCATIONS_AND_ARTICLES', 'commons-booking-admin-booking') . '</p>';
+      echo '<h3>' . ___('CREATE_BOOKING', 'commons-booking-admin-booking', 'Create Booking') . '</h3>';
+      echo '<p>' . ___('NO_LOCATIONS_AND_ITEMS', 'commons-booking-admin-booking', 'There have to be locations and items to create bookings.') . '</p>';
     }
 
   }

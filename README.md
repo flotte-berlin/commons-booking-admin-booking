@@ -11,7 +11,7 @@
 ## Description
 
 **Commons Booking Admin Booking** is a Wordpress plugin which extends the [Commons Booking](https://github.com/wielebenwir/commons-booking) plugin by a form in the booking section of the administration page and enables admins to create bookings for arbitrary users.  
-Precondition is an exisitng timeframe for the chosen article in the wanted booking period. The limitations (Commons Booking settings) regarding the max. amount of days and the calender period don't exist. A check for already existing bookings is done and the closing days of the chosen location are taken into account. If wanted a confirmation mail can be sent (with same content as the standard booking confirmation email).
+Precondition is an exisitng timeframe for the chosen item in the wanted booking period. The limitations (Commons Booking settings) regarding the max. amount of days and the calender period don't exist. A check for already existing bookings is done and the closing days of the chosen location are taken into account. If wanted a confirmation mail can be sent (with same content as the standard booking confirmation email).
 
 ## Beschreibung
 
