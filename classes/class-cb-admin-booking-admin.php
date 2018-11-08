@@ -33,7 +33,7 @@ class CB_Admin_Booking_Admin {
       $this->valid_cb_item_ids[] = $cb_item->ID;
     }
 
-    add_action( 'toplevel_page_cb_bookings', array($this, 'render_booking_creation'));
+    $this->render_booking_creation();
 
   }
 
