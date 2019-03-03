@@ -190,21 +190,23 @@ class CB_Admin_Booking_Admin {
 
     $location = get_posts( $location_posts_args );
 
-    //check if there are at least location and item created
+    //check if there are at least one location and item created
     if(count($location) > 0 && count($this->cb_items) > 0) {
-      $data = $validation_result['data'];
+
+      //prefill form
+      $data = isset($validation_result) ? $validation_result['data'] : array();
 
       $date_min = new DateTime();
-      $date_start = !$booking_result && $data['date_start_valid'] ? $data['date_start_valid'] : new DateTime();
-      $date_end = !$booking_result && $data['date_end_valid'] ? $data['date_end_valid'] : new DateTime();
+      $date_start = !$booking_result && isset($data['date_start_valid']) ? $data['date_start_valid'] : new DateTime();
+      $date_end = !$booking_result && isset($data['date_end_valid']) ? $data['date_end_valid'] : new DateTime();
 
-      $user_id = !$booking_result ? $data['user_id'] : null;
-      $item_id = !$booking_result ? $data['item_id'] : null;
+      $user_id = !$booking_result ? isset($data['user_id']) : null;
+      $item_id = !$booking_result ? isset($data['item_id']) : null;
 
       $cb_items = $this->cb_items;
       $users = $this->users;
 
-      $send_mail = !$booking_result && $data['send_mail'] ? $data['send_mail'] : null;
+      $send_mail = !$booking_result && isset($data['send_mail']) ? $data['send_mail'] : null;
 
       include_once( CB_ADMIN_BOOKING_PATH . 'templates/bookings-template.php' );
     }
