@@ -200,8 +200,8 @@ class CB_Admin_Booking_Admin {
       $date_start = !$booking_result && isset($data['date_start_valid']) ? $data['date_start_valid'] : new DateTime();
       $date_end = !$booking_result && isset($data['date_end_valid']) ? $data['date_end_valid'] : new DateTime();
 
-      $user_id = !$booking_result ? isset($data['user_id']) : null;
-      $item_id = !$booking_result ? isset($data['item_id']) : null;
+      $user_id = !$booking_result && isset($data['user_id']) ? $data['user_id'] : null;
+      $item_id = !$booking_result && isset($data['item_id']) ? $data['item_id'] : null;
 
       $cb_items = $this->cb_items;
       $users = $this->users;
