@@ -45,9 +45,10 @@ class CB_Admin_Booking_Admin {
 
     $data['date_start_valid'] = isset($_POST['date_start']) && strlen($_REQUEST['date_start']) > 0 ? new DateTime($_POST['date_start']) : null;
     $data['date_end_valid'] = isset($_POST['date_end']) && strlen($_REQUEST['date_end']) > 0 ? new DateTime($_POST['date_end']) : null;
-    $data['item_id'] =  $_POST['item_id'];
+    $data['item_id'] = $_POST['item_id'];
     $data['user_id'] = $_POST['user_id'];
     $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
+    $data['comment'] = sanitize_text_field($_POST['comment']);
 
     if(!in_array($data['item_id'], $this->valid_cb_item_ids)) {
       $errors[] = ___('ITEM_INVALID', 'commons-booking-admin-booking', 'invalid item');
@@ -71,7 +72,7 @@ class CB_Admin_Booking_Admin {
       $data['date_end'] = $_REQUEST['date_end'];
     }
 
-    return array(data => $data, errors => $errors);
+    return array('data' => $data, 'errors' => $errors);
 
   }
 
@@ -85,6 +86,7 @@ class CB_Admin_Booking_Admin {
     $item_id = $data['item_id'];
     $user_id = $data['user_id'];
     $send_mail = $data['send_mail'];
+    $comment = $data['comment'];
 
     if( strtotime($date_start) > strtotime($date_end)) {
       $message = ___('START_DATE_AFTER_END_DATE', 'commons-booking-admin-booking', 'end date must be after start date');
@@ -109,7 +111,7 @@ class CB_Admin_Booking_Admin {
       if($date_start_valid && $date_end_valid) {
         if (count($conflict_bookings) == 0) {
 
-          $booking_id = $this->create_booking($date_start, $date_end, $item_id, $user_id, 'confirmed', $location_id, $send_mail);
+          $booking_id = $this->create_booking($date_start, $date_end, $item_id, $user_id, 'confirmed', $location_id, $send_mail, $comment);
 
           if($booking_id) {
             $message = ___('BOOKING_CREATED', 'commons-booking-admin-booking', 'The booking was created successfully.');
@@ -135,7 +137,7 @@ class CB_Admin_Booking_Admin {
       }
       else {
 
-        $dates .= !$date_start_valid ? date("d.m.Y", strtotime($date_start))  : '';
+        $dates = !$date_start_valid ? date("d.m.Y", strtotime($date_start))  : '';
         if($date_start != $date_end) {
           $dates .= !$date_start_valid && !$date_end_valid ? ', ' : '';
           $dates .= !$date_end_valid ? date("d.m.Y", strtotime($date_end)) : '';
@@ -206,6 +208,8 @@ class CB_Admin_Booking_Admin {
       $cb_items = $this->cb_items;
       $users = $this->users;
 
+      $comment = !$booking_result && isset($data['comment']) ? $data['comment'] : null;
+
       $send_mail = !$booking_result && isset($data['send_mail']) ? $data['send_mail'] : null;
 
       include_once( CB_ADMIN_BOOKING_PATH . 'templates/bookings-template.php' );
@@ -235,7 +239,7 @@ class CB_Admin_Booking_Admin {
   /**
   * create a booking with given properties
   */
-  function create_booking($date_start, $date_end, $item_id, $user_id, $status, $location_id, $send_mail) {
+  function create_booking($date_start, $date_end, $item_id, $user_id, $status, $location_id, $send_mail, $comment) {
 
     $cb_booking = new CB_Booking();
 
@@ -245,6 +249,10 @@ class CB_Admin_Booking_Admin {
     //create booking (pending)
     $cb_booking->hash = $cb_booking->create_hash();
     $booking_id = $cb_booking->create_booking( $date_start, $date_end, $item_id);
+
+      if(strlen($comment) > 0) {
+        $this->save_comment($booking_id, $comment);
+      }
 
       if($booking_id) {
 
@@ -275,6 +283,24 @@ class CB_Admin_Booking_Admin {
 
     return $booking_id;
 
+  }
+
+  function save_comment($booking_id, $comment) {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'cb_bookings';
+
+    $wpdb->update(
+    	$table_name,
+    	array(
+    		'comment' => $comment,	// string
+    	),
+    	array( 'id' => $booking_id ),
+    	array(
+    		'%s',	// comment
+    	),
+    	array( '%d' )
+    );
   }
 
   /**
