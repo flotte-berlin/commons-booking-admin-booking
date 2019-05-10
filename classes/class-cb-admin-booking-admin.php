@@ -322,7 +322,7 @@ class CB_Admin_Booking_Admin {
     $b_vars['location_content'] = '';
     $b_vars['location_address'] = $cb_booking->data->format_adress($cb_booking->location['address']);
     $b_vars['location_thumb'] = get_thumb( $cb_booking->location_id );
-    $b_vars['location_contact'] = $cb_booking->location['contact'];
+    $b_vars['location_contact'] = is_array($cb_booking->location['contact']) ? $cb_booking->location['contact']['string'] : $cb_booking->location['contact']; //due to change after CB 0.9.2.2
     $b_vars['location_openinghours'] = $cb_booking->location['openinghours'];
 
     $b_vars['page_confirmation'] = $cb_booking->settings->get_settings('pages', 'booking_confirmed_page_select');

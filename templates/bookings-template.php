@@ -8,7 +8,7 @@
 
   <form method="POST">
     <input type="hidden" name="action" value="cb-booking-create">
-    <div style ="display: inline-block; min-width: 500px;">
+    <div style ="display: inline-block; min-width: 600px;">
       <div>
         <div style="width: 40%; float: left;">
           <label for="item_id"><?= ___( 'ITEM', 'commons-booking-admin-booking', 'book item') ?> </label><br>
@@ -31,11 +31,11 @@
       <div>
         <div style="width: 40%; float: left;">
           <label for="booking-start-date"><?= ___( 'FROM', 'commons-booking-admin-booking', 'from') ?> </label><br>
-          <input  style="width: 125px;" type="date" name="date_start" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_start->format('Y-m-d') ?>">
+          <input  style="width: 150px;" type="date" name="date_start" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_start->format('Y-m-d') ?>">
         </div>
         <div style="width: 40%; float: left;">
           <label for="booking-end-date"><?= ___( 'UNTIL', 'commons-booking-admin-booking', 'until') ?> </label><br>
-          <input style="width: 125px;" type="date" name="date_end" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_end->format('Y-m-d') ?>">
+          <input style="width: 150px;" type="date" name="date_end" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_end->format('Y-m-d') ?>">
         </div>
       </div>
       <div style="width: 100%; float: left; margin-top: 5px;">
