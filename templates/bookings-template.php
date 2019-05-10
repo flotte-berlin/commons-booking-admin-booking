@@ -39,7 +39,7 @@
         </div>
       </div>
       <div style="width: 100%; float: left; margin-top: 5px;">
-        <label for="comment">mit Kommentar (optional)</label><br>
+        <label for="comment"><?= ___( 'WITH_COMMENT', 'commons-booking-admin-booking', 'with comment') ?></label><br>
         <input style="width: 100%;" type="text" name="comment" value="<?= $comment ?>">
       </div>
       <div style="width: 100%; float: left; margin-top: 5px;">

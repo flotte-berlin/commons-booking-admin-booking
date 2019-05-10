@@ -1,23 +1,79 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: cb-admin-booking\n"
-"POT-Creation-Date: 2018-09-04 20:42+0100\n"
-"PO-Revision-Date: 2018-09-04 20:48+0100\n"
+"POT-Creation-Date: 2019-05-10 20:05+0200\n"
+"PO-Revision-Date: 2019-05-10 20:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
-"Language: deutsch\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 2.0.6\n"
 "X-Poedit-KeywordsList: __;gettext;gettext_noop;___\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
+#: ../classes/class-cb-admin-booking-admin.php:54
+msgid "ITEM_INVALID"
+msgstr "Artikel ungültig"
+
+#: ../classes/class-cb-admin-booking-admin.php:58
+msgid "USER_INVALID"
+msgstr "NutzerIn ungültig"
+
+#: ../classes/class-cb-admin-booking-admin.php:62
+msgid "START_DATE_INVALID"
+msgstr "Anfangsdatum ungültig"
+
+#: ../classes/class-cb-admin-booking-admin.php:69
+msgid "END_DATE_INVALID"
+msgstr "Enddatum ungültig"
+
+#: ../classes/class-cb-admin-booking-admin.php:92
+msgid "START_DATE_AFTER_END_DATE"
+msgstr "Das Anfangsdatum darf nicht nach dem Enddatum der Buchung liegen."
+
+#: ../classes/class-cb-admin-booking-admin.php:117
+msgid "BOOKING_CREATED"
+msgstr "Die Buchung wurde angelegt."
+
+#: ../classes/class-cb-admin-booking-admin.php:124
+msgid "BOOKING_CREATION_ERROR"
+msgstr "Leider ist beim Anlegen der Buchung ein Fehler aufgetreten."
+
+#: ../classes/class-cb-admin-booking-admin.php:132
+msgid "ALREADY_BOOKING_IN_PERIOD"
+msgstr ""
+"Es ist bereits eine Buchung für den gewünschten Artikel im angegebenen "
+"Zeitraum vorhanden."
+
+#: ../classes/class-cb-admin-booking-admin.php:146
+msgid "NO_BOOKING_FOR_CLOSED_DAYS"
+msgstr ""
+"Anfangs- und End-Datum der Buchung dürfen nicht auf einen Tag fallen, an dem "
+"der Standort geschlossen hat (%s)."
+
+#: ../classes/class-cb-admin-booking-admin.php:154
+msgid "NO_TIMEFRAME_AVAILABLE"
+msgstr ""
+"Für die gewünschte Buchung existiert noch kein Zeitraum - dieser muss "
+"zunächst erstellt werden."
+
+#: ../classes/class-cb-admin-booking-admin.php:175
+msgid "INPUT_ERRORS_OCCURED"
+msgstr "Es sind Eingabe-Fehler aufgetreten."
+
+#: ../classes/class-cb-admin-booking-admin.php:218
 #: ../templates/bookings-template.php:3
-#: ../classes/class-cb-admin-booking-admin.php:212
 msgid "CREATE_BOOKING"
 msgstr "Buchung erstellen"
+
+#: ../classes/class-cb-admin-booking-admin.php:219
+msgid "NO_LOCATIONS_AND_ITEMS"
+msgstr ""
+"Es müssen Standorte und Artikel vorhanden sein, um Buchungen erstellen zu "
+"können."
 
 #: ../templates/bookings-template.php:5
 msgid "ADMIN_DESCRIPTION_L1"
@@ -30,93 +86,41 @@ msgid "ADMIN_DESCRIPTION_L2"
 msgstr ""
 "um z.B. bestimmte Termine zu blocken oder längerfristig im Voraus zu planen."
 
-#: ../templates/bookings-template.php:11
+#: ../templates/bookings-template.php:14
 msgid "ITEM"
 msgstr "Artikel"
 
-#: ../templates/bookings-template.php:17
+#: ../templates/bookings-template.php:22
 msgid "FOR_USER"
 msgstr "für NutzerIn"
 
-#: ../templates/bookings-template.php:18
+#: ../templates/bookings-template.php:23
 msgid "NAME"
 msgstr "Name"
 
-#: ../templates/bookings-template.php:24
+#: ../templates/bookings-template.php:33
 msgid "FROM"
 msgstr "vom"
 
-#: ../templates/bookings-template.php:26
+#: ../templates/bookings-template.php:37
 msgid "UNTIL"
 msgstr "bis"
 
-#: ../templates/bookings-template.php:28
+#: ../templates/bookings-template.php:42
+msgid "WITH_COMMENT"
+msgstr "mit Kommentar (optional)"
+
+#: ../templates/bookings-template.php:46
 msgid "BOOK_AND"
 msgstr "buchen und"
 
-#: ../templates/bookings-template.php:29
+#: ../templates/bookings-template.php:47
 msgid "SEND_CONFIRMATION_MAIL"
 msgstr "Bestätigungsmail senden"
 
-#: ../templates/bookings-template.php:30
+#: ../templates/bookings-template.php:50
 msgid "EXECUTE"
 msgstr "ausführen"
-
-#: ../classes/class-cb-admin-booking-admin.php:53
-msgid "ITEM_INVALID"
-msgstr "Artikel ungültig"
-
-#: ../classes/class-cb-admin-booking-admin.php:57
-msgid "USER_INVALID"
-msgstr "NutzerIn ungültig"
-
-#: ../classes/class-cb-admin-booking-admin.php:61
-msgid "START_DATE_INVALID"
-msgstr "Anfangsdatum ungültig"
-
-#: ../classes/class-cb-admin-booking-admin.php:68
-msgid "END_DATE_INVALID"
-msgstr "Enddatum ungültig"
-
-#: ../classes/class-cb-admin-booking-admin.php:90
-msgid "START_DATE_AFTER_END_DATE"
-msgstr "Das Anfangsdatum darf nicht nach dem Enddatum der Buchung liegen."
-
-#: ../classes/class-cb-admin-booking-admin.php:115
-msgid "BOOKING_CREATED"
-msgstr "Die Buchung wurde angelegt."
-
-#: ../classes/class-cb-admin-booking-admin.php:122
-msgid "BOOKING_CREATION_ERROR"
-msgstr "Leider ist beim Anlegen der Buchung ein Fehler aufgetreten."
-
-#: ../classes/class-cb-admin-booking-admin.php:130
-msgid "ALREADY_BOOKING_IN_PERIOD"
-msgstr ""
-"Es ist bereits eine Buchung für den gewünschten Artikel im angegebenen "
-"Zeitraum vorhanden."
-
-#: ../classes/class-cb-admin-booking-admin.php:144
-msgid "NO_BOOKING_FOR_CLOSED_DAYS"
-msgstr ""
-"Anfangs- und End-Datum der Buchung dürfen nicht auf einen Tag fallen, an dem "
-"der Standort geschlossen hat (%s)."
-
-#: ../classes/class-cb-admin-booking-admin.php:152
-msgid "NO_TIMEFRAME_AVAILABLE"
-msgstr ""
-"Für die gewünschte Buchung existiert noch kein Zeitraum - dieser muss "
-"zunächst erstellt werden."
-
-#: ../classes/class-cb-admin-booking-admin.php:173
-msgid "INPUT_ERRORS_OCCURED"
-msgstr "Es sind Eingabe-Fehler aufgetreten."
-
-#: ../classes/class-cb-admin-booking-admin.php:213
-msgid "NO_LOCATIONS_AND_ITEMS"
-msgstr ""
-"Es müssen Standorte und Artikel vorhanden sein, um Buchungen erstellen zu "
-"können."
 
 #~ msgid "CONFIRM"
 #~ msgstr "bestätigen"
