@@ -43,7 +43,9 @@
         <input style="width: 100%;" type="text" name="comment" value="<?= $comment ?>">
       </div>
       <div style="width: 100%; float: left; margin-top: 5px;">
-        <?= ___( 'BOOK_AND', 'commons-booking-admin-booking', 'and') ?>
+        <input type="checkbox" name="ignore_closed_days" <?= $send_mail ? 'checked' : ''?>><?= ___( 'IGNORE_CLOSED_DAYS', 'commons-booking-admin-booking', 'ignore closed days') ?>
+      </div>
+      <div style="width: 100%; float: left; margin-top: 5px;">
         <input type="checkbox" name="send_mail" <?= $send_mail ? 'checked' : ''?>><?= ___( 'SEND_CONFIRMATION_MAIL', 'commons-booking-admin-booking', 'send confirmation mail') ?>
       </div>
 

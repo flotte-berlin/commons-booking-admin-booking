@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: cb-admin-booking\n"
-"POT-Creation-Date: 2019-05-10 20:05+0200\n"
-"PO-Revision-Date: 2019-05-10 20:05+0200\n"
+"POT-Creation-Date: 2019-05-17 14:51+0200\n"
+"PO-Revision-Date: 2019-05-17 15:10+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -111,16 +111,19 @@ msgid "WITH_COMMENT"
 msgstr "mit Kommentar (optional)"
 
 #: ../templates/bookings-template.php:46
-msgid "BOOK_AND"
-msgstr "buchen und"
+msgid "IGNORE_CLOSED_DAYS"
+msgstr "ignoriere Schließtage des Standorts für Buchungsbeginn/-ende"
 
-#: ../templates/bookings-template.php:47
+#: ../templates/bookings-template.php:49
 msgid "SEND_CONFIRMATION_MAIL"
 msgstr "Bestätigungsmail senden"
 
-#: ../templates/bookings-template.php:50
+#: ../templates/bookings-template.php:52
 msgid "EXECUTE"
-msgstr "ausführen"
+msgstr "buchen"
+
+#~ msgid "BOOK_AND"
+#~ msgstr "buchen und"
 
 #~ msgid "CONFIRM"
 #~ msgstr "bestätigen"

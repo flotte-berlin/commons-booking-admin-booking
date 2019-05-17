@@ -49,6 +49,7 @@ class CB_Admin_Booking_Admin {
     $data['user_id'] = $_POST['user_id'];
     $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
     $data['comment'] = sanitize_text_field($_POST['comment']);
+    $data['ignore_closed_days'] = isset($_POST['ignore_closed_days']) ? true : false;
 
     if(!in_array($data['item_id'], $this->valid_cb_item_ids)) {
       $errors[] = ___('ITEM_INVALID', 'commons-booking-admin-booking', 'invalid item');
@@ -87,6 +88,7 @@ class CB_Admin_Booking_Admin {
     $user_id = $data['user_id'];
     $send_mail = $data['send_mail'];
     $comment = $data['comment'];
+    $ignore_closed_days = $data['ignore_closed_days'];
 
     if( strtotime($date_start) > strtotime($date_end)) {
       $message = ___('START_DATE_AFTER_END_DATE', 'commons-booking-admin-booking', 'end date must be after start date');
@@ -104,11 +106,13 @@ class CB_Admin_Booking_Admin {
       //check if no bookings exist in wanted period
       $conflict_bookings = $this->fetch_bookings_in_period($date_start, $date_end, $item_id);
 
-      $closed_days = get_post_meta( $location_id, 'commons-booking_location_closeddays', TRUE  );
-      $date_start_valid = $this->validate_day($date_start, $closed_days);
-      $date_end_valid = $this->validate_day($date_end,$closed_days);
+      if(!$ignore_closed_days) {
+        $closed_days = get_post_meta( $location_id, 'commons-booking_location_closeddays', TRUE  );
+        $date_start_valid = $this->validate_day($date_start, $closed_days);
+        $date_end_valid = $this->validate_day($date_end,$closed_days);
+      }
 
-      if($date_start_valid && $date_end_valid) {
+      if($ignore_closed_days || $date_start_valid && $date_end_valid) {
         if (count($conflict_bookings) == 0) {
 
           $booking_id = $this->create_booking($date_start, $date_end, $item_id, $user_id, 'confirmed', $location_id, $send_mail, $comment);
@@ -362,7 +366,7 @@ class CB_Admin_Booking_Admin {
                         "AND '".$date_end."') ".
                         "OR (date_start < '".$date_start."' ".
                         "AND date_end > '".$date_end."')) ".
-                        "AND (status = 'pending' OR status = 'confirmed')";
+                        "AND status = 'confirmed'";
 
     $prepared_statement = $wpdb->prepare($select_statement, $item_id);
 
