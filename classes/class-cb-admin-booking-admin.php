@@ -214,6 +214,9 @@ class CB_Admin_Booking_Admin {
 
       $comment = !$booking_result && isset($data['comment']) ? $data['comment'] : null;
 
+      $show_ignore_closed_days_option = cb_admin_booking\is_plugin_active('commons-booking-special-days.php');
+      $ignore_closed_days = !$booking_result && isset($data['ignore_closed_days']) ? $data['ignore_closed_days'] : null;
+
       $send_mail = !$booking_result && isset($data['send_mail']) ? $data['send_mail'] : null;
 
       include_once( CB_ADMIN_BOOKING_PATH . 'templates/bookings-template.php' );
