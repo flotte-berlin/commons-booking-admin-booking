@@ -44,7 +44,7 @@
       </div>
       <? if($show_ignore_closed_days_option): ?>
         <div style="width: 100%; float: left; margin-top: 5px;">
-          <input type="checkbox" name="ignore_closed_days" <?= $ignore_closed_days ? 'checked' : ''?>><?= ___( 'IGNORE_CLOSED_DAYS', 'commons-booking-admin-booking', 'ignore closed days') ?>
+          <input type="checkbox" name="ignore_closed_days" <?= $ignore_closed_days ? 'checked' : ''?>><?= ___( 'IGNORE_CLOSED_DAYS', 'commons-booking-admin-booking', 'ignore closed days of location for booking start/end') ?>
         </div>
       <? endif; ?>
       <div style="width: 100%; float: left; margin-top: 5px;">

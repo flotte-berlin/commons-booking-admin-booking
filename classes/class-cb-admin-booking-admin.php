@@ -8,8 +8,7 @@ class CB_Admin_Booking_Admin {
   function load_bookings_creation() {
 
     //load translation
-    $lang_path = 'commons-booking-admin-booking/languages/'; // CB_ADMIN_BOOKING_PATH . 'lang/';
-    load_plugin_textdomain( 'commons-booking-admin-booking', false, $lang_path );
+    load_plugin_textdomain( 'commons-booking-admin-booking', false, CB_ADMIN_LANG_PATH );
 
     //get all users
     $this->users = get_users();

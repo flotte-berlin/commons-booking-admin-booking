@@ -11,6 +11,7 @@ License URI:  https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 define( 'CB_ADMIN_BOOKING_PATH', plugin_dir_path( __FILE__ ) );
+define( 'CB_ADMIN_LANG_PATH', dirname( plugin_basename( __FILE__ )) . '/languages/' );
 
 require_once( CB_ADMIN_BOOKING_PATH . 'functions/translate.php' );
 require_once( CB_ADMIN_BOOKING_PATH . 'functions/is-plugin-active.php' );
