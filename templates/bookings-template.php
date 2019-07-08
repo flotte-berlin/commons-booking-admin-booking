@@ -8,26 +8,52 @@
 
   <form method="POST">
     <input type="hidden" name="action" value="cb-booking-create">
-    <label for="item_id"><?= ___( 'ITEM', 'commons-booking-admin-booking', 'book item') ?> </label>
-    <select name="item_id">
-      <?php foreach ($cb_items as $cb_item): ?>
-        <option value="<?= $cb_item->ID ?>" <?= $cb_item->ID == $item_id ? 'selected' : '' ?>><?= $cb_item->post_title ?></option>
-      <?php endforeach; ?>
-    </select>
-    <label for="user_id"><?= ___( 'FOR_USER', 'commons-booking-admin-booking', 'for user') ?> </label>
-    <select name="user_id" placeholder="<?= ___( 'NAME', 'commons-booking-admin-booking', 'name') ?>...">
-      <option value=""></option>
-      <?php foreach ($users as $user): ?>
-        <option value="<?= $user->ID ?>" <?= $user->ID == $user_id ? 'selected' : '' ?>><?= $user->first_name ?> <?= $user->last_name ?> (<?= $user->display_name ?>)</option>
-      <?php endforeach; ?>
-    </select>
-    <label for="booking-start-date"><?= ___( 'FROM', 'commons-booking-admin-booking', 'from') ?> </label>
-      <input type="date" name="date_start" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_start->format('Y-m-d') ?>">
-    <label for="booking-end-date"><?= ___( 'UNTIL', 'commons-booking-admin-booking', 'until') ?> </label>
-    <input type="date" name="date_end" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_end->format('Y-m-d') ?>">
-    <?= ___( 'BOOK_AND', 'commons-booking-admin-booking', 'and') ?>
-    <input type="checkbox" name="send_mail" <?= $send_mail ? 'checked' : ''?>><?= ___( 'SEND_CONFIRMATION_MAIL', 'commons-booking-admin-booking', 'send confirmation mail') ?>
-    | <input id="cb-codes-export" class="button action" value="<?= ___( 'EXECUTE', 'commons-booking-admin-booking', 'make it so') ?>" type="submit">
+    <div style ="display: inline-block; min-width: 600px;">
+      <div>
+        <div style="width: 40%; float: left;">
+          <label for="item_id"><?= ___( 'ITEM', 'commons-booking-admin-booking', 'book item') ?> </label><br>
+          <select name="item_id">
+            <?php foreach ($cb_items as $cb_item): ?>
+              <option value="<?= $cb_item->ID ?>" <?= $cb_item->ID == $item_id ? 'selected' : '' ?>><?= $cb_item->post_title ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div style="width: 60%; float: left;">
+          <label for="user_id"><?= ___( 'FOR_USER', 'commons-booking-admin-booking', 'for user') ?> </label><br>
+          <select name="user_id" placeholder="<?= ___( 'NAME', 'commons-booking-admin-booking', 'name') ?>...">
+            <option value=""></option>
+            <?php foreach ($users as $user): ?>
+              <option value="<?= $user->ID ?>" <?= $user->ID == $user_id ? 'selected' : '' ?>><?= $user->first_name ?> <?= $user->last_name ?> (<?= $user->display_name ?>)</option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div style="width: 40%; float: left;">
+          <label for="booking-start-date"><?= ___( 'FROM', 'commons-booking-admin-booking', 'from') ?> </label><br>
+          <input  style="width: 150px;" type="date" name="date_start" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_start->format('Y-m-d') ?>">
+        </div>
+        <div style="width: 40%; float: left;">
+          <label for="booking-end-date"><?= ___( 'UNTIL', 'commons-booking-admin-booking', 'until') ?> </label><br>
+          <input style="width: 150px;" type="date" name="date_end" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_end->format('Y-m-d') ?>">
+        </div>
+      </div>
+      <div style="width: 100%; float: left; margin-top: 5px;">
+        <label for="comment"><?= ___( 'WITH_COMMENT', 'commons-booking-admin-booking', 'with comment') ?></label><br>
+        <input style="width: 100%;" type="text" name="comment" value="<?= $comment ?>">
+      </div>
+      <? if($show_ignore_closed_days_option): ?>
+        <div style="width: 100%; float: left; margin-top: 5px;">
+          <input type="checkbox" name="ignore_closed_days" <?= $ignore_closed_days ? 'checked' : ''?>><?= ___( 'IGNORE_CLOSED_DAYS', 'commons-booking-admin-booking', 'ignore closed days of location for booking start/end') ?>
+        </div>
+      <? endif; ?>
+      <div style="width: 100%; float: left; margin-top: 5px;">
+        <input type="checkbox" name="send_mail" <?= $send_mail ? 'checked' : ''?>><?= ___( 'SEND_CONFIRMATION_MAIL', 'commons-booking-admin-booking', 'send confirmation mail') ?>
+      </div>
+
+      <input style="float: right;" id="cb-codes-export" class="button action" value="<?= ___( 'EXECUTE', 'commons-booking-admin-booking', 'make it so') ?>" type="submit">
+    </div>
+
   </form>
 </p>
 
@@ -43,7 +69,7 @@ jQuery('select[name=user_id]').selectize({
 });
 
 jQuery('.selectize-control').css({
-  'width': '300px',
+  'width': '100%',
   'display': 'inline-block',
   'vertical-align': 'top',
   'margin-top': '2px'

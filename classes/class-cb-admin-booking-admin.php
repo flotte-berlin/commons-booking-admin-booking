@@ -8,8 +8,7 @@ class CB_Admin_Booking_Admin {
   function load_bookings_creation() {
 
     //load translation
-    $lang_path = 'commons-booking-admin-booking/languages/'; // CB_ADMIN_BOOKING_PATH . 'lang/';
-    load_plugin_textdomain( 'commons-booking-admin-booking', false, $lang_path );
+    load_plugin_textdomain( 'commons-booking-admin-booking', false, CB_ADMIN_LANG_PATH );
 
     //get all users
     $this->users = get_users();
@@ -45,9 +44,11 @@ class CB_Admin_Booking_Admin {
 
     $data['date_start_valid'] = isset($_POST['date_start']) && strlen($_REQUEST['date_start']) > 0 ? new DateTime($_POST['date_start']) : null;
     $data['date_end_valid'] = isset($_POST['date_end']) && strlen($_REQUEST['date_end']) > 0 ? new DateTime($_POST['date_end']) : null;
-    $data['item_id'] =  $_POST['item_id'];
+    $data['item_id'] = $_POST['item_id'];
     $data['user_id'] = $_POST['user_id'];
     $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
+    $data['comment'] = sanitize_text_field($_POST['comment']);
+    $data['ignore_closed_days'] = isset($_POST['ignore_closed_days']) ? true : false;
 
     if(!in_array($data['item_id'], $this->valid_cb_item_ids)) {
       $errors[] = ___('ITEM_INVALID', 'commons-booking-admin-booking', 'invalid item');
@@ -71,7 +72,7 @@ class CB_Admin_Booking_Admin {
       $data['date_end'] = $_REQUEST['date_end'];
     }
 
-    return array(data => $data, errors => $errors);
+    return array('data' => $data, 'errors' => $errors);
 
   }
 
@@ -85,6 +86,8 @@ class CB_Admin_Booking_Admin {
     $item_id = $data['item_id'];
     $user_id = $data['user_id'];
     $send_mail = $data['send_mail'];
+    $comment = $data['comment'];
+    $ignore_closed_days = $data['ignore_closed_days'];
 
     if( strtotime($date_start) > strtotime($date_end)) {
       $message = ___('START_DATE_AFTER_END_DATE', 'commons-booking-admin-booking', 'end date must be after start date');
@@ -102,14 +105,16 @@ class CB_Admin_Booking_Admin {
       //check if no bookings exist in wanted period
       $conflict_bookings = $this->fetch_bookings_in_period($date_start, $date_end, $item_id);
 
-      $closed_days = get_post_meta( $location_id, 'commons-booking_location_closeddays', TRUE  );
-      $date_start_valid = $this->validate_day($date_start, $closed_days);
-      $date_end_valid = $this->validate_day($date_end,$closed_days);
+      if(!$ignore_closed_days) {
+        $closed_days = get_post_meta( $location_id, 'commons-booking_location_closeddays', TRUE  );
+        $date_start_valid = $this->validate_day($date_start, $closed_days);
+        $date_end_valid = $this->validate_day($date_end,$closed_days);
+      }
 
-      if($date_start_valid && $date_end_valid) {
+      if($ignore_closed_days || $date_start_valid && $date_end_valid) {
         if (count($conflict_bookings) == 0) {
 
-          $booking_id = $this->create_booking($date_start, $date_end, $item_id, $user_id, 'confirmed', $location_id, $send_mail);
+          $booking_id = $this->create_booking($date_start, $date_end, $item_id, $user_id, 'confirmed', $location_id, $send_mail, $comment);
 
           if($booking_id) {
             $message = ___('BOOKING_CREATED', 'commons-booking-admin-booking', 'The booking was created successfully.');
@@ -135,7 +140,7 @@ class CB_Admin_Booking_Admin {
       }
       else {
 
-        $dates .= !$date_start_valid ? date("d.m.Y", strtotime($date_start))  : '';
+        $dates = !$date_start_valid ? date("d.m.Y", strtotime($date_start))  : '';
         if($date_start != $date_end) {
           $dates .= !$date_start_valid && !$date_end_valid ? ', ' : '';
           $dates .= !$date_end_valid ? date("d.m.Y", strtotime($date_end)) : '';
@@ -206,6 +211,11 @@ class CB_Admin_Booking_Admin {
       $cb_items = $this->cb_items;
       $users = $this->users;
 
+      $comment = !$booking_result && isset($data['comment']) ? $data['comment'] : null;
+
+      $show_ignore_closed_days_option = cb_admin_booking\is_plugin_active('commons-booking-special-days.php');
+      $ignore_closed_days = !$booking_result && isset($data['ignore_closed_days']) ? $data['ignore_closed_days'] : null;
+
       $send_mail = !$booking_result && isset($data['send_mail']) ? $data['send_mail'] : null;
 
       include_once( CB_ADMIN_BOOKING_PATH . 'templates/bookings-template.php' );
@@ -235,7 +245,7 @@ class CB_Admin_Booking_Admin {
   /**
   * create a booking with given properties
   */
-  function create_booking($date_start, $date_end, $item_id, $user_id, $status, $location_id, $send_mail) {
+  function create_booking($date_start, $date_end, $item_id, $user_id, $status, $location_id, $send_mail, $comment) {
 
     $cb_booking = new CB_Booking();
 
@@ -245,6 +255,10 @@ class CB_Admin_Booking_Admin {
     //create booking (pending)
     $cb_booking->hash = $cb_booking->create_hash();
     $booking_id = $cb_booking->create_booking( $date_start, $date_end, $item_id);
+
+      if(strlen($comment) > 0) {
+        $this->save_comment($booking_id, $comment);
+      }
 
       if($booking_id) {
 
@@ -277,6 +291,24 @@ class CB_Admin_Booking_Admin {
 
   }
 
+  function save_comment($booking_id, $comment) {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'cb_bookings';
+
+    $wpdb->update(
+    	$table_name,
+    	array(
+    		'comment' => $comment,	// string
+    	),
+    	array( 'id' => $booking_id ),
+    	array(
+    		'%s',	// comment
+    	),
+    	array( '%d' )
+    );
+  }
+
   /**
   * set booking vars on given CB_Booking instance to prepare sending an email
   */
@@ -296,7 +328,7 @@ class CB_Admin_Booking_Admin {
     $b_vars['location_content'] = '';
     $b_vars['location_address'] = $cb_booking->data->format_adress($cb_booking->location['address']);
     $b_vars['location_thumb'] = get_thumb( $cb_booking->location_id );
-    $b_vars['location_contact'] = $cb_booking->location['contact'];
+    $b_vars['location_contact'] = is_array($cb_booking->location['contact']) ? $cb_booking->location['contact']['string'] : $cb_booking->location['contact']; //due to change after CB 0.9.2.2
     $b_vars['location_openinghours'] = $cb_booking->location['openinghours'];
 
     $b_vars['page_confirmation'] = $cb_booking->settings->get_settings('pages', 'booking_confirmed_page_select');
@@ -336,7 +368,7 @@ class CB_Admin_Booking_Admin {
                         "AND '".$date_end."') ".
                         "OR (date_start < '".$date_start."' ".
                         "AND date_end > '".$date_end."')) ".
-                        "AND (status = 'pending' OR status = 'confirmed')";
+                        "AND status = 'confirmed'";
 
     $prepared_statement = $wpdb->prepare($select_statement, $item_id);
 
