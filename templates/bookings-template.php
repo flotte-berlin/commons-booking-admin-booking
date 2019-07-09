@@ -257,10 +257,10 @@ jQuery(document).ready(function ($) {
       console.log(data);
 
       var $table = $(
-        '<table><thead><tr>' +
-          '<th><?= ___('NR', 'commons-booking-admin-booking', 'nr') ?></th>' +
-          '<th><?= ___('FROM', 'commons-booking-admin-booking', 'from') ?></th>' +
-          '<th><?= ___('UNTIL', 'commons-booking-admin-booking', 'until') ?></th>' +
+        '<table class="wp-list-tables widefat"><thead><tr>' +
+          '<th style="width: 30px;"><?= ___('NR', 'commons-booking-admin-booking', 'nr') ?></th>' +
+          '<th style="width: 100px;"><?= ___('FROM', 'commons-booking-admin-booking', 'from') ?></th>' +
+          '<th style="width: 100px;"><?= ___('UNTIL', 'commons-booking-admin-booking', 'until') ?></th>' +
           '<th><?= ___('ERROR', 'commons-booking-admin-booking', 'error') ?></th>' +
         '</tr></head></table>'
       );
@@ -268,18 +268,18 @@ jQuery(document).ready(function ($) {
 
       var bookings_to_confirm = 0;
       data.bookings.forEach(function(booking, index) {
-        var color = booking.result.success == true ? '#000' : '#a00';
+        var color = booking.result.success == true ? 'rgb(50, 55, 60)' : '#a00';
         if(booking.result.success) {
           bookings_to_confirm++;
         }
-        var $row = $('<tr style="color: ' + color + ';"></tr>');
+        var $row = $('<tr></tr>');
+        var style = 'style="color: ' + color + ';"';
         var count = index + 1;
-        $row.append('<td>' + count + '</td>')
-        $row.append('<td style="width: 100px;">' + format_date(booking.date_start) + '</td>');
-        $row.append('<td style="width: 100px;">' + format_date(booking.date_end) + '</td>');
+        $row.append('<td ' + style + '>' + count + '</td>')
+        $row.append('<td ' + style + '>' + format_date(booking.date_start) + '</td>');
+        $row.append('<td ' + style + '>' + format_date(booking.date_end) + '</td>');
         var message = booking.result.message == null ? '-' : booking.result.message;
-        var text_align = booking.result.message == null ? 'center' : 'left';
-        $row.append('<td style="text-align: ' + text_align + '">' + message + '</td>');
+        $row.append('<td '+ style + '">' + message + '</td>');
         $tbody.append($row);
       })
       $table.append($tbody);
