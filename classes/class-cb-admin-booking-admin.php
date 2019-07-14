@@ -120,8 +120,27 @@ class CB_Admin_Booking_Admin {
 
       if(!$ignore_closed_days) {
         $closed_days = get_post_meta( $location_id, 'commons-booking_location_closeddays', TRUE  );
+        $date_start_valid = true;
+        $date_end_valid = true;
+
         $date_start_valid = $this->validate_day($date_start, $closed_days);
         $date_end_valid = $this->validate_day($date_end, $closed_days);
+
+        //include special days (non-regular closed days & holidays)
+        if(cb_admin_booking\is_plugin_active('commons-booking-special-days.php') && method_exists('CB_Special_Days','get_locations_special_closed_days')) {
+          if($date_start_valid) {
+            $locations_special_closed_days = CB_Special_Days::get_locations_special_closed_days($location_id, strtotime($date_start), strtotime($date_start));
+            trigger_error('$date_start_valid: ' . json_encode($locations_special_closed_days));
+            $date_start_valid = count($locations_special_closed_days) == 0;
+          }
+
+          if($date_end_valid) {
+            $locations_special_closed_days = CB_Special_Days::get_locations_special_closed_days($location_id, strtotime($date_end), strtotime($date_end));
+            $date_end_valid = count($locations_special_closed_days) == 0;
+          }
+
+        }
+
       }
 
       if($ignore_closed_days || $date_start_valid && $date_end_valid) {
@@ -429,7 +448,6 @@ class CB_Admin_Booking_Admin {
 
       $comment = !$booking_result['success'] && isset($data['comment']) ? $data['comment'] : null;
 
-      $show_ignore_closed_days_option = cb_admin_booking\is_plugin_active('commons-booking-special-days.php');
       $ignore_closed_days = !$booking_result['success'] && isset($data['ignore_closed_days']) ? $data['ignore_closed_days'] : null;
 
       $send_mail = !$booking_result['success'] && isset($data['send_mail']) ? $data['send_mail'] : null;

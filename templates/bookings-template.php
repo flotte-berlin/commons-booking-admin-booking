@@ -67,11 +67,9 @@
         <label for="comment"><?= ___( 'WITH_COMMENT', 'commons-booking-admin-booking', 'with comment') ?>:</label><br>
         <input style="width: 100%;" type="text" name="comment" value="<?= $comment ?>">
       </div>
-      <? if($show_ignore_closed_days_option): ?>
-        <div style="width: 100%; float: left; margin-top: 5px;">
-          <input type="checkbox" name="ignore_closed_days" <?= $ignore_closed_days ? 'checked' : ''?>><?= ___( 'IGNORE_CLOSED_DAYS', 'commons-booking-admin-booking', 'ignore closed days of location for booking start/end') ?>
-        </div>
-      <? endif; ?>
+      <div style="width: 100%; float: left; margin-top: 5px;">
+        <input type="checkbox" name="ignore_closed_days" <?= $ignore_closed_days ? 'checked' : ''?>><?= ___( 'IGNORE_CLOSED_DAYS', 'commons-booking-admin-booking', 'ignore closed days of location for booking start/end') ?>
+      </div>
       <div style="width: 100%; float: left; margin-top: 5px;">
         <input type="checkbox" name="send_mail" <?= $send_mail ? 'checked' : ''?>><?= ___( 'SEND_CONFIRMATION_MAIL', 'commons-booking-admin-booking', 'send confirmation mail') ?>
       </div>
