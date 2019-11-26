@@ -14,14 +14,6 @@ class CB_Admin_Booking_Admin {
     wp_enqueue_style( 'wp-jquery-ui-dialog' );
     wp_enqueue_style('cb_admin_booking_css', CB_ADMIN_BOOKING_ASSETS_URL . 'css/style.css');
 
-    //get all users
-    $this->users = get_users();
-    $this->valid_user_ids = array();
-
-    foreach ($this->users as $user) {
-      $this->valid_user_ids[] = $user->ID;
-    }
-
     //get all items
     $item_posts_args = array(
       'numberposts' => -1,
@@ -50,8 +42,8 @@ class CB_Admin_Booking_Admin {
 
     $data['date_start_valid'] = isset($_POST['date_start']) && strlen($_REQUEST['date_start']) > 0 ? new DateTime($_POST['date_start']) : null;
     $data['date_end_valid'] = isset($_POST['date_end']) && strlen($_REQUEST['date_end']) > 0 ? new DateTime($_POST['date_end']) : null;
-    $data['item_id'] = $_POST['item_id'];
-    $data['user_id'] = $_POST['user_id'];
+    $data['item_id'] = (int) $_POST['item_id'];
+    $data['user_id'] = (int) $_POST['user_id'];
     $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
     $data['comment'] = sanitize_text_field($_POST['comment']);
     $data['ignore_closed_days'] = isset($_POST['ignore_closed_days']) ? true : false;
@@ -84,7 +76,7 @@ class CB_Admin_Booking_Admin {
       $errors[] = ___('ITEM_INVALID', 'commons-booking-admin-booking', 'invalid item');
     }
 
-    if(!in_array($data['user_id'], $this->valid_user_ids)) {
+    if(get_userdata($data['user_id']) === false) {
       $errors[] = ___('USER_INVALID', 'commons-booking-admin-booking', 'invalid user');
     }
 
@@ -445,7 +437,6 @@ class CB_Admin_Booking_Admin {
       $item_id = !$booking_result['success'] && isset($data['item_id']) ? $data['item_id'] : null;
 
       $cb_items = $this->cb_items;
-      $users = $this->users;
 
       $comment = !$booking_result['success'] && isset($data['comment']) ? $data['comment'] : null;
 
