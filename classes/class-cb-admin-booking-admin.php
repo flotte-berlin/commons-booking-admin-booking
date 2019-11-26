@@ -12,6 +12,7 @@ class CB_Admin_Booking_Admin {
 
     wp_enqueue_script( 'jquery-ui-dialog' );
     wp_enqueue_style( 'wp-jquery-ui-dialog' );
+    wp_enqueue_style('cb_admin_booking_css', CB_ADMIN_BOOKING_ASSETS_URL . 'css/style.css');
 
     //get all users
     $this->users = get_users();
@@ -585,7 +586,54 @@ class CB_Admin_Booking_Admin {
 
     $cb_booking->b_vars = $b_vars;
 
-}
+  }
+
+  function handle_user_search() {
+    $search_term = sanitize_text_field( stripslashes($_POST['q']));
+
+    // WP_User_Query arguments
+    $args = array (
+        'order'      => 'ASC',
+        'orderby'    => 'display_name',
+        'search'     => '*' . esc_attr( $search_term ) . '*',
+        'meta_query' => array(
+            'relation' => 'OR',
+            array(
+                'key'     => 'first_name',
+                'value'   => $search_term,
+                'compare' => 'LIKE'
+            ),
+            array(
+                'key'     => 'last_name',
+                'value'   => $search_term,
+                'compare' => 'LIKE'
+            ),
+            array(
+                'key'     => 'display_name',
+                'value'   => $search_term,
+                'compare' => 'LIKE'
+            )
+        )
+    );
+
+    // Create the WP_User_Query object
+    $wp_user_query = new WP_User_Query( $args );
+
+    // Get the results
+    $users = $wp_user_query->get_results();
+
+    $result = [];
+
+    foreach ($users as $user) {
+      $result[] = [
+        "id" => $user->ID,
+        "name" => $user->first_name . ' ' . $user->last_name . ' (' . $user->display_name . ')',
+      ];
+    }
+
+    echo json_encode($result);
+    wp_die();
+  }
 
   /**
   * fetches bookings in period determined by start and end date from db for given item

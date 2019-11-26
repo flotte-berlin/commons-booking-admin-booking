@@ -32,10 +32,6 @@
         <div style="width: 60%; float: left;">
           <label for="user_id"><?= ___( 'FOR_USER', 'commons-booking-admin-booking', 'for user') ?>:</label><br>
           <select name="user_id" placeholder="<?= ___( 'NAME', 'commons-booking-admin-booking', 'name') ?>...">
-            <option value=""></option>
-            <?php foreach ($users as $user): ?>
-              <option value="<?= $user->ID ?>" <?= $user->ID == $user_id ? 'selected' : '' ?>><?= $user->first_name ?> <?= $user->last_name ?> (<?= $user->display_name ?>)</option>
-            <?php endforeach; ?>
           </select>
         </div>
       </div>
@@ -89,21 +85,37 @@
 <script>
 jQuery('head').append('<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.4/css/selectize.min.css">');
 
-jQuery('select[name=user_id]').selectize({
-    sortField: 'text'
+var $selectize = jQuery('select[name=user_id]').selectize({
+    valueField: 'id',
+    labelField: 'name',
+    score: function() { return function() { return 1; }; }, //to keep search query, see https://stackoverflow.com/a/35920145
+    load: function(query, callback) {
+      var select = $selectize[0].selectize;
+      if (!query.length || query.length < 3) return callback();
+      cached_query = query;
+      jQuery.ajax({
+        url: '/wp-admin/admin-ajax.php', //TODO: build absolute url
+        type: 'POST',
+        dataType: 'JSON',
+        data: { action : 'cb_admin_booking_user_search' , q: query},
+        error: function() {
+          callback();
+        },
+        success: function(res) {
+          if(res.length == 0) {
+            select.close();
+          }
+
+          select.clearOptions();
+          callback(res);
+          console.log(res);
+        }
+      });
+    }
 });
 
-jQuery('.selectize-control').css({
-  'width': '100%',
-  'display': 'inline-block',
-  'vertical-align': 'top',
-  'margin-top': '2px'
-});
+jQuery('.selectize-input').append('<span class="dashicons dashicons-image-rotate"></span>');
 
-jQuery('.selectize-input').css({
-  'padding': '4.5px',
-  'border-radius': '0px'
-});
 </script>
 
 <script>
