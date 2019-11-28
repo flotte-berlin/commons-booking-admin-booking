@@ -93,7 +93,7 @@ var $selectize = jQuery('select[name=user_id]').selectize({
       var select = $selectize[0].selectize;
       if (!query.length || query.length < 3) return callback();
       jQuery.ajax({
-        url: '/wp-admin/admin-ajax.php', //TODO: build absolute url
+        url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
         type: 'POST',
         dataType: 'JSON',
         data: { action : 'cb_admin_booking_user_search' , q: query},
