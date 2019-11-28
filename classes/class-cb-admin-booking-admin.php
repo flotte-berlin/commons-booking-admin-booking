@@ -580,42 +580,60 @@ class CB_Admin_Booking_Admin {
   }
 
   function handle_user_search() {
-    $search_term = sanitize_text_field( stripslashes($_POST['q']));
+    $search_term = sanitize_text_field(stripslashes($_POST['q']));
 
-    // WP_User_Query arguments
-    $args = array (
+    $wp_user_query = new WP_User_Query( array (
         'order'      => 'ASC',
         'orderby'    => 'display_name',
-        'search'     => '*' . esc_attr( $search_term ) . '*',
-        'meta_query' => array(
-            'relation' => 'OR',
-            array(
-                'key'     => 'first_name',
-                'value'   => $search_term,
-                'compare' => 'LIKE'
-            ),
-            array(
-                'key'     => 'last_name',
-                'value'   => $search_term,
-                'compare' => 'LIKE'
-            ),
-            array(
-                'key'     => 'display_name',
-                'value'   => $search_term,
-                'compare' => 'LIKE'
-            )
-        )
-    );
+        'search'     => '*' . esc_attr($search_term) . '*',
+        'search_columns' => [
+          'user_nicename'
+        ]
+    ));
 
-    // Create the WP_User_Query object
-    $wp_user_query = new WP_User_Query( $args );
-
-    // Get the results
     $users = $wp_user_query->get_results();
+
+    $search_array = explode(' ', $search_term);
+    if(count($search_array) == 1) {
+      $first_name = $search_term;
+      $last_name = $search_term;
+      $relation = 'OR';
+    }
+    else if(count($search_array) == 2) {
+      $first_name = $search_array[0];
+      $last_name = $search_array[1];
+      $relation = 'AND';
+    }
+    else if(count($search_array) > 2) {
+      array_pop($search_array);
+      $first_name = implode(' ', $search_array);
+      $last_name = $search_array[count($search_array) - 1];
+      $relation = 'AND';
+    }
+
+    $wp_user_query = new WP_User_Query( array (
+        'meta_query' => array(
+          'relation' => $relation,
+          array(
+              'key'     => 'first_name',
+              'value'   => $first_name,
+              'compare' => 'LIKE'
+          ),
+          array(
+              'key'     => 'last_name',
+              'value'   => $last_name,
+              'compare' => 'LIKE'
+          )
+        )
+    ));
+
+    $users2 = $wp_user_query->get_results();
+
+    $totalusers = array_unique(array_merge($users, $users2), SORT_REGULAR);
 
     $result = [];
 
-    foreach ($users as $user) {
+    foreach ($totalusers as $user) {
       $result[] = [
         "id" => $user->ID,
         "name" => $user->first_name . ' ' . $user->last_name . ' (' . $user->display_name . ')',

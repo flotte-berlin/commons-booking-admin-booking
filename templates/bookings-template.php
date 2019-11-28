@@ -92,7 +92,6 @@ var $selectize = jQuery('select[name=user_id]').selectize({
     load: function(query, callback) {
       var select = $selectize[0].selectize;
       if (!query.length || query.length < 3) return callback();
-      cached_query = query;
       jQuery.ajax({
         url: '/wp-admin/admin-ajax.php', //TODO: build absolute url
         type: 'POST',
