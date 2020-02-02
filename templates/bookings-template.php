@@ -178,9 +178,12 @@ jQuery(document).ready(function ($) {
   $('input[name="booking_mode"]').change();
 
   $('#submit-booking').click(function(event) {
-    start_loading();
-
+    setTimeout(function() {
+      start_loading();
+    }, 0);
+    
     var booking_mode = $('input[name="booking_mode"]:checked').val();
+    console.log('booking_mode: ', booking_mode);
 
     if(booking_mode == 2) {
       event.preventDefault();
