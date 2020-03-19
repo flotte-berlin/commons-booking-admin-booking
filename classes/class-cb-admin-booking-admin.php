@@ -18,7 +18,7 @@ class CB_Admin_Booking_Admin {
     $item_posts_args = array(
       'numberposts' => -1,
       'post_type'   => 'cb_items',
-      'orderby'    => 'post_date',
+      'orderby'    => 'post_title',
       'order' => 'ASC'
     );
     $this->cb_items = get_posts( $item_posts_args );
@@ -47,6 +47,7 @@ class CB_Admin_Booking_Admin {
     $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
     $data['comment'] = sanitize_text_field($_POST['comment']);
     $data['ignore_closed_days'] = isset($_POST['ignore_closed_days']) ? true : false;
+    $data['ignore_blocking_item_usage_restriction'] = isset($_POST['ignore_blocking_item_usage_restriction']) ? true : false;
     $data['booking_mode'] = isset($_POST['booking_mode']) && in_array($_POST['booking_mode'], [1,2]) ? (int) $_POST['booking_mode'] : null;
     $data['weekdays'] = [];
 
@@ -98,7 +99,7 @@ class CB_Admin_Booking_Admin {
 
   }
 
-  function check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days) {
+  function check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days, $ignore_blocking_item_usage_restriction) {
 
     //check if location (timeframe) exists
     $location_id = $cb_booking->get_booking_location_id($date_start, $date_end, $item_id);
@@ -137,8 +138,21 @@ class CB_Admin_Booking_Admin {
       }
 
       if($ignore_closed_days || $date_start_valid && $date_end_valid) {
-        if (count($conflict_bookings) == 0) {
+        error_reporting(E_ALL);
+        $conflict_bookings_count = count($conflict_bookings);
 
+        if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php') && $ignore_blocking_item_usage_restriction) {
+          $blocking_user_id = get_option('cb_item_restriction_blocking_user_id', null);
+          if($blocking_user_id) {
+            foreach ($conflict_bookings as $conflict_booking) {
+              if($conflict_booking->user_id == $blocking_user_id) {
+                $conflict_bookings_count--;
+              }
+            }
+          }
+        }
+
+        if($conflict_bookings_count == 0) {
           $booking_result['success'] = true;
           return $booking_result;
         }
@@ -228,6 +242,7 @@ class CB_Admin_Booking_Admin {
     $send_mail = $data['send_mail'];
     $comment = $data['comment'];
     $ignore_closed_days = $data['ignore_closed_days'];
+    $ignore_blocking_item_usage_restriction = $data['ignore_blocking_item_usage_restriction'];
 
     $cb_booking = new CB_Booking();
 
@@ -240,7 +255,7 @@ class CB_Admin_Booking_Admin {
       }
 
       //logical booking precheck
-      $booking_result = $this->check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days);
+      $booking_result = $this->check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days, $ignore_blocking_item_usage_restriction);
 
       if($booking_result['success'] == true) {
         $location_id = $cb_booking->get_booking_location_id($date_start, $date_end, $item_id);
@@ -340,7 +355,7 @@ class CB_Admin_Booking_Admin {
         foreach ($bookings as $booking) {
 
           //check, if booking is possible
-          $booking_check_result = $this->check_booking_creation($cb_booking, $booking['date_start'], $booking['date_end'], $item_id, $user_id, $ignore_closed_days);
+          $booking_check_result = $this->check_booking_creation($cb_booking, $booking['date_start'], $booking['date_end'], $item_id, $user_id, $ignore_closed_days, $ignore_blocking_item_usage_restriction);
           $booking['result'] = $booking_check_result;
 
           if($test) {
@@ -443,6 +458,14 @@ class CB_Admin_Booking_Admin {
       $ignore_closed_days = !$booking_result['success'] && isset($data['ignore_closed_days']) ? $data['ignore_closed_days'] : null;
 
       $send_mail = !$booking_result['success'] && isset($data['send_mail']) ? $data['send_mail'] : null;
+
+      if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php')) {
+        $render_ibiur_option = true;
+        $ignore_blocking_item_usage_restriction = !$booking_result['success'] && isset($data['ignore_blocking_item_usage_restriction']) ? $data['ignore_blocking_item_usage_restriction'] : null;
+      }
+      else {
+        $render_ibiur_option = false;
+      }
 
       include_once( CB_ADMIN_BOOKING_PATH . 'templates/bookings-template.php' );
     }
