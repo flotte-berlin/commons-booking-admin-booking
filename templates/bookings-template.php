@@ -49,31 +49,8 @@
           <div style="display: inline-block; text-align: center;"><?= ___( 'SUNDAY', 'commons-booking-admin-booking', 'sun') ?><br><input type="checkbox" name="weekdays[]" value="7"></div>
         </div>
       </div>
-      <div style="width: 100%; float: left; margin-top: 5px;">
-        <div style="width: 40%; float: left;">
-          <label for="booking-start-date"><?= ___( 'FROM', 'commons-booking-admin-booking', 'from') ?>:</label><br>
-          <input  style="width: 150px;" type="date" name="date_start" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_start->format('Y-m-d') ?>">
-        </div>
-        <div style="width: 40%; float: left;">
-          <label for="booking-end-date"><?= ___( 'UNTIL', 'commons-booking-admin-booking', 'until') ?>:</label><br>
-          <input style="width: 150px;" type="date" name="date_end" min="<?= $date_min->format('Y-m-d') ?>" value="<?= $date_end->format('Y-m-d') ?>">
-        </div>
-      </div>
-      <div style="width: 100%; float: left; margin-top: 5px;">
-        <label for="comment"><?= ___( 'WITH_COMMENT', 'commons-booking-admin-booking', 'with comment') ?>:</label><br>
-        <input style="width: 100%;" type="text" name="comment" value="<?= $comment ?>">
-      </div>
-      <div style="width: 100%; float: left; margin-top: 5px;">
-        <input type="checkbox" name="ignore_closed_days" <?= $ignore_closed_days ? 'checked' : ''?>><?= ___( 'IGNORE_CLOSED_DAYS', 'commons-booking-admin-booking', 'ignore closed days of location for booking start/end') ?>
-      </div>
-      <?php if($render_ibiur_option): ?>
-        <div style="width: 100%; float: left; margin-top: 5px;">
-          <input type="checkbox" name="ignore_blocking_item_usage_restriction" <?= $ignore_blocking_item_usage_restriction ? 'checked' : ''?>><?= ___( 'IGNORE_BLOCKING_ITEM_USAGE_RESTRICTION', 'commons-booking-admin-booking', 'ignore intersection with existing item usage restriction (total breakdown)') ?>
-        </div>
-      <?php endif; ?>
-      <div style="width: 100%; float: left; margin-top: 5px;">
-        <input type="checkbox" name="send_mail" <?= $send_mail ? 'checked' : ''?>><?= ___( 'SEND_CONFIRMATION_MAIL', 'commons-booking-admin-booking', 'send confirmation mail') ?>
-      </div>
+
+      <?php include( CB_ADMIN_BOOKING_PATH . 'templates/booking-details-template.php' ); ?>
 
       <input style="float: right; width: 100px;" id="submit-booking" class="button action" value="<?= ___( 'EXECUTE', 'commons-booking-admin-booking', 'make it so') ?>" type="submit">
     </div>
@@ -84,6 +61,36 @@
 </div>
 
 <div id="cb-admin-booking-serial-confirm-dialog" class="hidden"></div>
+
+<div id="booking-edit-modal" style="display:none;">
+  <div id="booking-edit-notice-wrapper"></div>
+  <table style="width: 100%">
+    <thead>
+      <tr>
+        <th>Artikel</th>
+        <th>Nutzer*in</th>
+        <th>Standort</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td id="bem-item"></td>
+        <td id="bem-user"></td>
+        <td id="bem-location"></td>
+        <td id="bem-status"></td>
+      </tr>
+    </tbody>
+  </table>
+  <form id="booking-edit-form">
+    <input name="booking_id" type="hidden">
+    <input name="table_row_index" type="hidden">
+    <?php include( CB_ADMIN_BOOKING_PATH . 'templates/booking-details-template.php' ); ?>
+
+    <input type="submit" id="submit-booking-edit" class="button" style="float: right; width: 100px;" value="<?= ___( 'UPDATE', 'commons-booking-admin-booking', 'update') ?>">
+  </form>
+
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.4/js/standalone/selectize.js"></script>
 
@@ -153,38 +160,39 @@ jQuery(document).ready(function ($) {
     }
   })
 
-  var button_text = $('#submit-booking').val();
-  var loading_interval;
+  function start_loading($notice_wrapper, $submit_button) {
+    $notice_wrapper.html('');
 
-  function start_loading() {
-    $('#admin-booking-error-wrapper').html('');
-
-    $('#submit-booking').prop("disabled",true);
+    $submit_button.prop("disabled", true);
     var loading_text = '.';
-    $('#submit-booking').val(loading_text);
+    $submit_button.val(loading_text);
     loading_interval = setInterval(function() {
-      loading_text = $('#submit-booking').val();
+      loading_text = $submit_button.val();
       if(loading_text.length < 9) {
         loading_text += '..';
       }
       else {
         loading_text = '.';
       }
-      $('#submit-booking').val(loading_text);
+      $submit_button.val(loading_text);
     }, 250);
+
+    return loading_interval
   }
 
-  function stop_loading() {
-    clearInterval(loading_interval);
-    $('#submit-booking').val(button_text);
-    $('#submit-booking').prop("disabled",false);
+  function stop_loading($submit_button, loading) {
+    clearInterval(loading.interval);
+    $submit_button.val(loading.button_text);
+    $submit_button.prop("disabled",false);
   }
 
   $('input[name="booking_mode"]').change();
 
   $('#submit-booking').click(function(event) {
+    var loading = {};
     setTimeout(function() {
-      start_loading();
+      loading.button_text = $('#submit-booking').val();
+      loading.interval = start_loading($('#admin-booking-error-wrapper'), $('#submit-booking'));
     }, 0);
 
     var booking_mode = $('input[name="booking_mode"]:checked').val();
@@ -205,12 +213,11 @@ jQuery(document).ready(function ($) {
         else {
           payload[item.name] = item.value;
         }
-
       });
       payload.action  ='cb_admin_booking_serial';
 
       jQuery.post(url, payload, function(response) {
-        stop_loading();
+        stop_loading($('#submit-booking'), loading);
         var data = JSON.parse(response);
         console.log('data: ', data);
         if(data.state == 'booking') {
@@ -322,7 +329,119 @@ jQuery(document).ready(function ($) {
 
     },
   });
-});
 
+  /*** edit booking ***/
+  var $table_body = $('table.buchungen tbody').first();
+
+  //add edit button
+  if($table_body) {
+
+    var booking_ids = [];
+
+    var $table_body_rows = $table_body.find('tr');
+
+    //collect booking ids
+    $table_body_rows.each(function(table_row_index, table_row) {
+      var $table_row = $(table_row);
+      //var $button = $('<button class="button edit-booking"><?/*= ___('EDIT', 'commons-booking-admin-booking', 'edit')*/ ?></button>');
+      var $button = $('<a id="show-booking-edit" class="button thickbox" style="padding-top: 4px; line-height: 18px;" href="#TB_inline?&width=500&height=350&inlineId=booking-edit-modal" title="<?= ___('EDIT_BOOKING', 'commons-booking-admin-booking', 'edit booking') ?>"><?= ___('EDIT', 'commons-booking-admin-booking', 'edit') ?></a>');
+      $table_row.find('td:last').append($button);
+
+      $button.click(function(e) {
+        e.preventDefault();
+        $('#booking-edit-notice-wrapper').html('');
+
+        var item = $table_row.find('td').eq(1).contents().get(0).innerText;
+        $('#bem-item').html(item);
+
+        var user = $table_row.find('td').eq(5).contents().get(0).innerText;
+        $('#bem-user').html(user);
+        var location = $table_row.find('td').eq(6).contents().get(0).innerText;
+        $('#bem-location').html(location);
+        var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
+        $('#bem-status').html(status);
+
+        $('#booking-edit-form input[name="table_row_index"]').val(table_row_index);
+
+        var booking_id = $table_row.find('td:first').contents().get(0).nodeValue;
+        $('#booking-edit-form input[name="booking_id"]').val(booking_id);
+
+        var date_start = $table_row.find('td').eq(2).contents().get(0).nodeValue;
+        $('#booking-edit-form input[name="date_start"]').val(date_start);
+
+        var date_end = $table_row.find('td').eq(3).contents().get(0).nodeValue;
+        $('#booking-edit-form input[name="date_end"]').val(date_end);
+
+        $('#booking-edit-form input[name="comment"]').val('');
+        //load booking comment
+        $('#booking-edit-form input[name="comment"]').prop('disabled', true);
+        jQuery.ajax({
+          url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
+          type: 'POST',
+          dataType: 'JSON',
+          data: {action : 'get_booking_comment', booking_id: booking_id},
+          error: function(res) {
+            console.error('comment error:', res);
+
+          },
+          success: function(res) {
+            $('#booking-edit-form input[name="comment"]').prop('disabled', false);
+            $('#booking-edit-form input[name="comment"]').val(res.comment);
+          }
+        });
+      });
+    });
+
+    //update form submit
+    $('#submit-booking-edit').click(function(e) {
+      e.preventDefault();
+      var loading = {};
+      setTimeout(function() {
+        loading.button_text = $('#submit-booking-edit').val();
+        loading.interval = start_loading($('#booking-edit-notice-wrapper'), $('#submit-booking-edit'));
+      }, 0);
+
+      var $form = $('#booking-edit-form');
+      var payload = {};
+      $form.serializeArray().forEach(function(item) {
+        payload[item.name] = item.value;
+      });
+      //console.log('payload:', payload);
+
+      function render_notice(success, message) {
+        var $error_wrapper = $('#admin-booking-error-wrapper');
+        var notice_class = success ? 'notice-success' : 'notice-error';
+        var $notice = $('<div class="notice ' + notice_class + '"><p>' + message + '</p></div>');
+
+        setTimeout(function() {
+          $('#booking-edit-notice-wrapper').html($notice);
+        }, 0);
+      }
+
+      jQuery.ajax({
+        url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
+        type: 'POST',
+        dataType: 'JSON',
+        data: Object.assign({action : 'cb_admin_booking_edit' }, payload),
+        error: function(res) {
+          //console.error('booking error:', res);
+          render_notice(res.success, res.message);
+        },
+        success: function(res) {
+          //console.log(res);
+          var table_row_index = $('#booking-edit-form > input[name="table_row_index"]').val()
+          var $table_row = $($table_body.find('tr')[table_row_index]);
+
+          $table_row.find('td').eq(2).contents().get(0).nodeValue = payload.date_start;
+          $table_row.find('td').eq(3).contents().get(0).nodeValue = payload.date_end;
+
+          render_notice(res.success, res.message);
+        }
+      }).always(function() {
+        stop_loading($('#submit-booking-edit'), loading);
+      });
+    });
+  }
+});
 
 </script>

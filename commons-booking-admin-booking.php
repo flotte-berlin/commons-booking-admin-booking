@@ -3,7 +3,7 @@
 Plugin Name:  Commons Booking Admin Booking
 Plugin URI:   https://github.com/flotte-berlin/commons-booking-admin-booking
 Description:  Ein Plugin in Ergänzung zu Commons Booking, das es erlaubt aus dem Admin-Bereich heraus Buchungen für andere NutzerInnen zu erstellen.
-Version:      0.2.6
+Version:      0.3.0
 Author:       poilu
 Author URI:   https://github.com/poilu
 License:      GPLv2 or later
@@ -22,6 +22,8 @@ $cb_admin_booking_admin = new CB_Admin_Booking_Admin();
 
 add_action( 'wp_ajax_cb_admin_booking_serial', [$cb_admin_booking_admin, 'handle_serial_booking_check'] );
 add_action( 'wp_ajax_cb_admin_booking_user_search', [$cb_admin_booking_admin, 'handle_user_search'] );
+add_action( 'wp_ajax_cb_admin_booking_edit', [$cb_admin_booking_admin, 'handle_booking_edit'] );
+add_action( 'wp_ajax_get_booking_comment', [$cb_admin_booking_admin, 'get_booking_comment'] );
 add_action( 'toplevel_page_cb_bookings', array($cb_admin_booking_admin, 'load_bookings_creation'));
 
 ?>

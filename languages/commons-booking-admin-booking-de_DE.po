@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: cb-admin-booking\n"
-"POT-Creation-Date: 2020-03-19 13:06+0100\n"
-"PO-Revision-Date: 2020-03-19 13:07+0100\n"
+"POT-Creation-Date: 2020-03-22 17:57+0100\n"
+"PO-Revision-Date: 2020-03-22 17:58+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -14,87 +14,127 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../classes/class-cb-admin-booking-admin.php:54
+#: ../classes/class-cb-admin-booking-admin.php:55
 msgid "BOOKING_MODE_INVALID"
 msgstr "Buchungsmodus ungültig"
 
-#: ../classes/class-cb-admin-booking-admin.php:66
+#: ../classes/class-cb-admin-booking-admin.php:67
 msgid "WEEKDAYS_INVALID"
 msgstr "Wochentage ungültig"
 
-#: ../classes/class-cb-admin-booking-admin.php:70
+#: ../classes/class-cb-admin-booking-admin.php:71
 msgid "WEEKDAYS_MISSING"
 msgstr "Wochentage fehlen"
 
-#: ../classes/class-cb-admin-booking-admin.php:76
+#: ../classes/class-cb-admin-booking-admin.php:77
 msgid "ITEM_INVALID"
 msgstr "Artikel ungültig"
 
-#: ../classes/class-cb-admin-booking-admin.php:80
+#: ../classes/class-cb-admin-booking-admin.php:81
 msgid "USER_INVALID"
 msgstr "NutzerIn ungültig"
 
-#: ../classes/class-cb-admin-booking-admin.php:84
+#: ../classes/class-cb-admin-booking-admin.php:85
+#: ../classes/class-cb-admin-booking-admin.php:798
 msgid "START_DATE_INVALID"
 msgstr "Anfangsdatum ungültig"
 
-#: ../classes/class-cb-admin-booking-admin.php:91
+#: ../classes/class-cb-admin-booking-admin.php:92
+#: ../classes/class-cb-admin-booking-admin.php:805
 msgid "END_DATE_INVALID"
 msgstr "Enddatum ungültig"
 
-#: ../classes/class-cb-admin-booking-admin.php:146
+#: ../classes/class-cb-admin-booking-admin.php:171
 msgid "ALREADY_BOOKING_IN_PERIOD"
 msgstr ""
 "Es ist bereits eine Buchung für den gewünschten Artikel im angegebenen "
 "Zeitraum vorhanden."
 
-#: ../classes/class-cb-admin-booking-admin.php:158
+#: ../classes/class-cb-admin-booking-admin.php:183
 msgid "NO_BOOKING_FOR_CLOSED_DAYS"
 msgstr ""
 "Anfangs- und End-Datum der Buchung dürfen nicht auf einen Tag fallen, an dem "
 "der Standort geschlossen hat (%s)."
 
-#: ../classes/class-cb-admin-booking-admin.php:164
+#: ../classes/class-cb-admin-booking-admin.php:189
 msgid "NO_TIMEFRAME_AVAILABLE"
 msgstr ""
 "Für die gewünschte Buchung existiert noch kein Zeitraum - dieser muss "
 "zunächst erstellt werden."
 
-#: ../classes/class-cb-admin-booking-admin.php:181
+#: ../classes/class-cb-admin-booking-admin.php:206
 msgid "START_DATE_AFTER_END_DATE"
 msgstr "Das Anfangsdatum darf nicht nach dem Enddatum der Buchung liegen."
 
-#: ../classes/class-cb-admin-booking-admin.php:198
-#: ../classes/class-cb-admin-booking-admin.php:404
+#: ../classes/class-cb-admin-booking-admin.php:218
+#: ../classes/class-cb-admin-booking-admin.php:434
 msgid "INPUT_ERRORS_OCCURED"
 msgstr "Es sind Eingabe-Fehler aufgetreten"
 
-#: ../classes/class-cb-admin-booking-admin.php:250
+#: ../classes/class-cb-admin-booking-admin.php:280
 msgid "BOOKING_CREATED"
 msgstr "Die Buchung wurde angelegt."
 
-#: ../classes/class-cb-admin-booking-admin.php:255
+#: ../classes/class-cb-admin-booking-admin.php:285
 msgid "BOOKING_CREATION_ERROR"
 msgstr "Leider ist beim Anlegen der Buchung ein Fehler aufgetreten."
 
-#: ../classes/class-cb-admin-booking-admin.php:362
+#: ../classes/class-cb-admin-booking-admin.php:392
 msgid "BOOKINGS_CREATED"
 msgstr "Es wurde(n) %s Buchung(en) angelegt."
 
-#: ../classes/class-cb-admin-booking-admin.php:369
+#: ../classes/class-cb-admin-booking-admin.php:399
 msgid "NO_BOOKINGS"
 msgstr "Es gibt keine Buchungen zu erstellen mit den geplanten Vorgaben."
 
-#: ../classes/class-cb-admin-booking-admin.php:458
+#: ../classes/class-cb-admin-booking-admin.php:489
 #: ../templates/bookings-template.php:3
 msgid "CREATE_BOOKING"
 msgstr "Buchung erstellen"
 
-#: ../classes/class-cb-admin-booking-admin.php:459
+#: ../classes/class-cb-admin-booking-admin.php:490
 msgid "NO_LOCATIONS_AND_ITEMS"
 msgstr ""
 "Es müssen Standorte und Artikel vorhanden sein, um Buchungen erstellen zu "
 "können."
+
+#: ../classes/class-cb-admin-booking-admin.php:750
+msgid "BOOKING_UPDATE_ERROR"
+msgstr "Leider ist beim Aktualisieren der Buchung ein Fehler aufgetreten."
+
+#: ../classes/class-cb-admin-booking-admin.php:753
+msgid "BOOKING_UPDATED"
+msgstr "Die Buchung wurde aktualisiert."
+
+#: ../classes/class-cb-admin-booking-admin.php:794
+msgid "BOOKING_ID_INVALID"
+msgstr "ungültige Buchung"
+
+#: ../templates/booking-details-template.php:3
+#: ../templates/bookings-template.php:268
+msgid "FROM"
+msgstr "vom"
+
+#: ../templates/booking-details-template.php:7
+#: ../templates/bookings-template.php:269
+msgid "UNTIL"
+msgstr "bis"
+
+#: ../templates/booking-details-template.php:12
+msgid "WITH_COMMENT"
+msgstr "mit Kommentar (optional)"
+
+#: ../templates/booking-details-template.php:16
+msgid "IGNORE_CLOSED_DAYS"
+msgstr "ignoriere Schließtage des Standorts für Buchungsbeginn/-ende"
+
+#: ../templates/booking-details-template.php:20
+msgid "IGNORE_BLOCKING_ITEM_USAGE_RESTRICTION"
+msgstr "ignoriere Überschneidung mit Nutzungsbeschränkung (Totalausfall)"
+
+#: ../templates/booking-details-template.php:24
+msgid "SEND_CONFIRMATION_MAIL"
+msgstr "Bestätigungsmail senden"
 
 #: ../templates/bookings-template.php:5
 msgid "ADMIN_DESCRIPTION_L1"
@@ -163,49 +203,37 @@ msgstr "Sa"
 msgid "SUNDAY"
 msgstr "So"
 
-#: ../templates/bookings-template.php:54 ../templates/bookings-template.php:279
-msgid "FROM"
-msgstr "vom"
-
-#: ../templates/bookings-template.php:58 ../templates/bookings-template.php:280
-msgid "UNTIL"
-msgstr "bis"
-
-#: ../templates/bookings-template.php:63
-msgid "WITH_COMMENT"
-msgstr "mit Kommentar (optional)"
-
-#: ../templates/bookings-template.php:67
-msgid "IGNORE_CLOSED_DAYS"
-msgstr "ignoriere Schließtage des Standorts für Buchungsbeginn/-ende"
-
-#: ../templates/bookings-template.php:71
-msgid "IGNORE_BLOCKING_ITEM_USAGE_RESTRICTION"
-msgstr "ignoriere Überschneidung mit Nutzungsbeschränkung (Totalausfall)"
-
-#: ../templates/bookings-template.php:75
-msgid "SEND_CONFIRMATION_MAIL"
-msgstr "Bestätigungsmail senden"
-
-#: ../templates/bookings-template.php:78
+#: ../templates/bookings-template.php:55
 msgid "EXECUTE"
 msgstr "buchen"
 
-#: ../templates/bookings-template.php:251
+#: ../templates/bookings-template.php:71
+msgid "UPDATE"
+msgstr "aktualisieren"
+
+#: ../templates/bookings-template.php:240
 msgid "SERIAL_BOOKING_CONFIRM_DIALOG_TITLE"
 msgstr "Buchungsübersicht"
 
-#: ../templates/bookings-template.php:278
+#: ../templates/bookings-template.php:267
 msgid "NR"
 msgstr "Nr"
 
-#: ../templates/bookings-template.php:281
+#: ../templates/bookings-template.php:270
 msgid "ERROR"
 msgstr "Fehler"
 
-#: ../templates/bookings-template.php:307
+#: ../templates/bookings-template.php:296
 msgid "CONFIRM"
 msgstr "bestätigen"
+
+#: ../templates/bookings-template.php:329
+msgid "EDIT_BOOKING"
+msgstr "Buchung bearbeiten"
+
+#: ../templates/bookings-template.php:329
+msgid "EDIT"
+msgstr "anpassen"
 
 #~ msgid "EMAIL_SENT"
 #~ msgstr "Eine Bestätigungsmail wurde versandt."

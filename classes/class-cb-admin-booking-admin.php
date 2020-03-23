@@ -34,7 +34,7 @@ class CB_Admin_Booking_Admin {
 
   }
 
-  function validate_booking_form_input() {
+  function validate_booking_create_form_input() {
 
     //validation
     $data = array();
@@ -99,7 +99,7 @@ class CB_Admin_Booking_Admin {
 
   }
 
-  function check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days, $ignore_blocking_item_usage_restriction) {
+  function check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days, $ignore_blocking_item_usage_restriction, $ignore_bookings_by_id = []) {
 
     //check if location (timeframe) exists
     $location_id = $cb_booking->get_booking_location_id($date_start, $date_end, $item_id);
@@ -107,10 +107,23 @@ class CB_Admin_Booking_Admin {
       'success' => false,
       'message' => null
     ];
+
     if($location_id) {
 
-      //check if no bookings exist in wanted period
+      //check if bookings that exist in wanted period
       $conflict_bookings = $this->fetch_bookings_in_period($date_start, $date_end, $item_id);
+
+      //remove bookings with ids that should be ignored
+      if(count($ignore_bookings_by_id) > 0) {
+        $filtered_conflict_bookings = [];
+        foreach ($conflict_bookings as $conflict_booking) {
+          if(!in_array($conflict_booking->id, $ignore_bookings_by_id)) {
+            $filtered_conflict_bookings[] = $conflict_booking;
+          }
+
+        }
+        $conflict_bookings = $filtered_conflict_bookings;
+      }
 
       if(!$ignore_closed_days) {
         $closed_days = get_post_meta( $location_id, 'commons-booking_location_closeddays', TRUE  );
@@ -124,7 +137,6 @@ class CB_Admin_Booking_Admin {
         if(cb_admin_booking\is_plugin_active('commons-booking-special-days.php') && method_exists('CB_Special_Days','get_locations_special_closed_days')) {
           if($date_start_valid) {
             $locations_special_closed_days = CB_Special_Days::get_locations_special_closed_days($location_id, strtotime($date_start), strtotime($date_start));
-            trigger_error('$date_start_valid: ' . json_encode($locations_special_closed_days));
             $date_start_valid = count($locations_special_closed_days) == 0;
           }
 
@@ -138,7 +150,6 @@ class CB_Admin_Booking_Admin {
       }
 
       if($ignore_closed_days || $date_start_valid && $date_end_valid) {
-        error_reporting(E_ALL);
         $conflict_bookings_count = count($conflict_bookings);
 
         if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php') && $ignore_blocking_item_usage_restriction) {
@@ -199,12 +210,7 @@ class CB_Admin_Booking_Admin {
     return $booking_result;
   }
 
-  function handle_serial_booking_check() {
-    $this->load_bookings_creation(true);
-
-    $validation_result = $this->validate_booking_form_input();
-    $data = $validation_result['data'];
-
+  function parse_validation_errors_and_respond($validation_result) {
     if(count($validation_result['errors']) > 0) {
       $error_list = str_replace(',', ', ', implode(",", $validation_result['errors']));
       $booking_result = [
@@ -216,6 +222,15 @@ class CB_Admin_Booking_Admin {
       echo json_encode($booking_result);
       return wp_die();
     }
+  }
+
+  function handle_serial_booking_check() {
+    $this->load_bookings_creation(true);
+
+    $validation_result = $this->validate_booking_create_form_input();
+    $data = $validation_result['data'];
+
+    $this->parse_validation_errors_and_respond($validation_result);
 
     $result = $this->check_dates_start_end($data['date_start'], $data['date_end']);
 
@@ -225,7 +240,7 @@ class CB_Admin_Booking_Admin {
       return wp_die();
     }
 
-    $result = $this->handle_booking_form_submit($data, true);
+    $result = $this->handle_booking_create_form_submit($data, true);
     $result['state'] = 'booking';
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
     return wp_die();
@@ -234,7 +249,7 @@ class CB_Admin_Booking_Admin {
   /**
   * handle submit of booking creation form
   */
-  function handle_booking_form_submit($data, $test = false) {
+  function handle_booking_create_form_submit($data, $test = false) {
     $date_start = $data['date_start'];
     $date_end = $data['date_end'];
     $item_id = $data['item_id'];
@@ -410,7 +425,7 @@ class CB_Admin_Booking_Admin {
     if(isset($_POST['action']))  {
       if($_POST['action'] == 'cb-booking-create') {
 
-        $validation_result = $this->validate_booking_form_input();
+        $validation_result = $this->validate_booking_create_form_input();
 
         if(count($validation_result['errors']) > 0) {
           $error_list = str_replace(',', ', ', implode(",", $validation_result['errors']));
@@ -421,7 +436,7 @@ class CB_Admin_Booking_Admin {
 
         }
         else {
-          $booking_result = $this->handle_booking_form_submit($validation_result['data']);
+          $booking_result = $this->handle_booking_create_form_submit($validation_result['data']);
 
         }
 
@@ -467,6 +482,7 @@ class CB_Admin_Booking_Admin {
         $render_ibiur_option = false;
       }
 
+      add_thickbox();
       include_once( CB_ADMIN_BOOKING_PATH . 'templates/bookings-template.php' );
     }
     else {
@@ -518,26 +534,54 @@ class CB_Admin_Booking_Admin {
         $method->invoke($cb_booking, $booking_id, $status);
 
         if($send_mail) {
-
-          //prepare  CB_Booking instance to send email
-          $cb_booking->item_id = $item_id;
-          $cb_booking->location_id = $location_id;
-          $cb_booking->date_start = $date_start;
-          $cb_booking->date_end = $date_end;
-
-          $cb_booking->booking = $cb_booking->get_booking($booking_id);
-
-          $cb_booking->email_messages = $cb_booking->settings->get_settings( 'mail' );
-
-          $this->set_booking_vars($cb_booking);
-
-          $cb_booking->send_mail($cb_booking->user['email']);
+          $this->send_mail($cb_booking, $booking_id);
       }
 
     }
 
     return $booking_id;
 
+  }
+
+  function send_mail($cb_booking, $booking_id) {
+    $cb_booking->booking = $cb_booking->get_booking($booking_id);
+
+    //prepare CB_Booking instance to send email
+    $cb_booking->item_id = $cb_booking->booking['item_id'];
+    $cb_booking->location_id = $cb_booking->booking['location_id'];
+    $cb_booking->date_start = $cb_booking->booking['date_start'];
+    $cb_booking->date_end = $cb_booking->booking['date_end'];
+    $cb_booking->user_id = $cb_booking->booking['user_id'];
+    $cb_booking->hash = $cb_booking->booking['hash'];
+
+    $cb_booking->email_messages = $cb_booking->settings->get_settings( 'mail' );
+
+    $this->set_booking_vars($cb_booking);
+
+    $cb_booking->send_mail($cb_booking->user['email']);
+  }
+
+  function get_booking_comment() {
+
+    $booking_id = (int) $_POST['booking_id'];
+
+    $comment = $this->load_comment($booking_id);
+
+    echo json_encode(['comment' => $comment]);
+    wp_die();
+  }
+
+  function load_comment($booking_id) {
+
+    global $wpdb;
+    //get comment of booking
+    $table_name = $wpdb->prefix . 'cb_bookings';
+    $select_statement = "SELECT comment FROM $table_name WHERE id = %d";
+    $prepared_statement = $wpdb->prepare($select_statement, $booking_id);
+
+    $row = $wpdb->get_row($prepared_statement);
+
+    return $row->comment;
   }
 
   function save_comment($booking_id, $comment) {
@@ -689,5 +733,114 @@ class CB_Admin_Booking_Admin {
     $bookings_result = $wpdb->get_results($prepared_statement);
 
     return $bookings_result;
+  }
+
+  function handle_booking_edit() {
+    $validation_result = $this->validate_booking_edit_form_input();
+    $data = $validation_result['data'];
+
+    $this->parse_validation_errors_and_respond($validation_result);
+
+    $result = $this->check_dates_start_end($data['date_start'], $data['date_end']);
+
+    if(!$result['success']) {
+      $result['state'] = 'validation';
+      echo json_encode($result, JSON_UNESCAPED_UNICODE);
+      return wp_die();
+    }
+
+    $result = $this->handle_booking_edit_form_submit($data);
+    $result['state'] = 'booking';
+    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    return wp_die();
+
+  }
+
+  function handle_booking_edit_form_submit($data) {
+    load_plugin_textdomain( 'commons-booking-admin-booking', false, CB_ADMIN_LANG_PATH );
+
+    //load booking with given id
+    $cb_booking = new CB_Booking();
+    $booking_data = $cb_booking->get_booking($data['booking_id']);
+
+    //check conflicts for given dates (ignore current booking)
+    if($booking_data['date_start'] != $data['date_start'] || $booking_data['date_end'] != $data['date_end']) {
+      $booking_result = $this->check_booking_creation($cb_booking, $data['date_start'], $data['date_end'], $booking_data['item_id'], $booking_data['user_id'], $data['ignore_closed_days'], $data['ignore_blocking_item_usage_restriction'], [$data['booking_id']]);
+    }
+    else {
+      $booking_result = [
+        'success' => true
+      ];
+    }
+
+    if($booking_result['success'] == true) {
+      $update_result = $this->update_booking($data['booking_id'], $data['date_start'], $data['date_end'], $data['send_mail']);
+
+      if($update_result === false) {
+        $booking_result['success'] = false;
+        $booking_result['message'] = ___('BOOKING_UPDATE_ERROR', 'commons-booking-admin-booking', 'An error occured while updating the booking.');
+      }
+      else {
+        $this->save_comment($data['booking_id'], $data['comment']);
+
+        $booking_result['message'] = ___('BOOKING_UPDATED', 'commons-booking-admin-booking', 'The booking was successfully updated.');
+        $booking_result['message'] .= $data['send_mail'] ? ' Eine Bestätigungsmail wurde versandt.' : '';
+      }
+
+    }
+
+    echo json_encode($booking_result, JSON_UNESCAPED_UNICODE);
+    return wp_die();
+
+  }
+
+  function update_booking($booking_id, $date_start, $date_end, $send_mail) {
+    //update in db
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'cb_bookings';
+    $update_result = $wpdb->update($table_name, ['date_start' => $date_start, 'date_end' => $date_end], array( 'id' => $booking_id));
+
+    if($send_mail) {
+      $cb_booking = new CB_Booking();
+      $this->send_mail($cb_booking, $booking_id);
+    }
+
+    return $update_result;
+  }
+
+  function validate_booking_edit_form_input() {
+
+    //validation
+    $data = array();
+    $errors = array();
+
+    $data['booking_id'] = isset($_POST['booking_id']) ? (int) $_POST['booking_id'] : null;
+    $data['date_start'] = isset($_POST['date_start']) && strlen($_REQUEST['date_start']) > 0 ? new DateTime($_POST['date_start']) : null;
+    $data['date_end'] = isset($_POST['date_end']) && strlen($_REQUEST['date_end']) > 0 ? new DateTime($_POST['date_end']) : null;
+    $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
+    $data['comment'] = sanitize_text_field($_POST['comment']);
+    $data['ignore_closed_days'] = isset($_POST['ignore_closed_days']) ? true : false;
+    $data['ignore_blocking_item_usage_restriction'] = isset($_POST['ignore_blocking_item_usage_restriction']) ? true : false;
+
+    if(!$data['booking_id']) {
+      $errors[] = ___('BOOKING_ID_INVALID', 'commons-booking-admin-booking', 'invalid booking');
+    }
+
+    if(!$data['date_start']) {
+      $errors[] = ___('START_DATE_INVALID', 'commons-booking-admin-booking', 'invalid start date');
+    }
+    else {
+      $data['date_start'] = $_REQUEST['date_start'];
+    }
+
+    if(!$data['date_end']) {
+      $errors[] = ___('END_DATE_INVALID', 'commons-booking-admin-booking', 'invalid end date');
+    }
+    else {
+      $data['date_end'] = $_REQUEST['date_end'];
+    }
+
+    return array('data' => $data, 'errors' => $errors);
   }
 }
