@@ -60,9 +60,23 @@
 
 </div>
 
-<div id="cb-admin-booking-serial-confirm-dialog" class="hidden"></div>
+<div id="booking-serial-confirm-modal" class="hidden">
+  <table class="wp-list-tables widefat">
+    <thead>
+      <tr>
+        <th style="width: 30px;"><?= ___('NR', 'commons-booking-admin-booking', 'nr') ?></th>
+        <th style="width: 100px;"><?= ___('FROM', 'commons-booking-admin-booking', 'from') ?></th>
+        <th style="width: 100px;"><?= ___('UNTIL', 'commons-booking-admin-booking', 'until') ?></th>
+        <th><?= ___('ERROR', 'commons-booking-admin-booking', 'error') ?></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<div id="booking-edit-modal" style="display:none;">
+  <button id="booking-serial-confirm-button" class="button action" style="margin-top: 10px; float: right;"><?= ___('CONFIRM', 'commons-booking-admin-booking', 'confirm') ?></button>
+</div>
+
+<div id="booking-edit-modal" class="hidden">
   <div id="booking-edit-notice-wrapper"></div>
   <table style="width: 100%">
     <thead>
@@ -196,7 +210,7 @@ jQuery(document).ready(function ($) {
     }, 0);
 
     var booking_mode = $('input[name="booking_mode"]:checked').val();
-    console.log('booking_mode: ', booking_mode);
+    //console.log('booking_mode: ', booking_mode);
 
     if(booking_mode == 2) {
       event.preventDefault();
@@ -219,13 +233,13 @@ jQuery(document).ready(function ($) {
       jQuery.post(url, payload, function(response) {
         stop_loading($('#submit-booking'), loading);
         var data = JSON.parse(response);
-        console.log('data: ', data);
+        //console.log('data: ', data);
         if(data.state == 'booking') {
 
           if(data.bookings) {
-            var $dialog = $('#cb-admin-booking-serial-confirm-dialog');
-            $dialog.data(data);
-            $dialog.dialog('open');
+            populate_booking_serial_confirm_modal(data);
+            var tb_url = '#TB_inline?&width=800&height=500&inlineId=booking-serial-confirm-modal';
+            tb_show('<?= ___('SERIAL_BOOKING_CONFIRM_DIALOG_TITLE', 'commons-booking-admin-booking', 'Confirm Bookings') ?>', tb_url);
           }
           else {
             render_notice(false, data.message);
@@ -242,10 +256,6 @@ jQuery(document).ready(function ($) {
     }
   });
 
-  //helper div for correct positioning of dialogs
-  var $overlay = $('<div id="positioning-overlay" style="position: fixed; top: 0; left: 0; bottom: 0; right: 0; display: none;"></div>');
-  $('body').append($overlay);
-
   var locale = '<?= str_replace('_', '-', get_locale()) ?>';
   function format_date(date_string) {
     var date_format_options = { year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -253,81 +263,39 @@ jQuery(document).ready(function ($) {
     return date.toLocaleDateString(locale, date_format_options);
   }
 
-  var $dialog = $('#cb-admin-booking-serial-confirm-dialog');
-  $dialog.dialog({
-    title: '<?= ___('SERIAL_BOOKING_CONFIRM_DIALOG_TITLE', 'commons-booking-admin-booking', 'Confirm Bookings') ?>',
-    dialogClass: 'wp-dialog',
-    autoOpen: false,
-    draggable: false,
-    width: 800,
-    modal: true,
-    resizable: false,
-    closeOnEscape: true,
-    position: {
-      my: "top",
-      at: "top+10%",
-      of: '#positioning-overlay'
-    },
-    open: function (event) {
-      // close dialog by clicking the overlay behind it
-      $('.ui-widget-overlay').bind('click', function(){
-        $dialog.dialog('close');
-      })
+  function populate_booking_serial_confirm_modal(data) {
+    //console.log(data);
 
-      // hide close button, because of a styling issue
-      $(".ui-dialog-titlebar-close").hide();
+    var $table = $('#booking-serial-confirm-modal table:first');
+    var $tbody = $($table.find('tbody:first'));
+    $tbody.html('');
 
-      var data = $(this).data();
-      console.log(data);
+    var bookings_to_confirm = 0;
+    data.bookings.forEach(function(booking, index) {
+      var color = booking.result.success == true ? 'rgb(50, 55, 60)' : '#a00';
+      if(booking.result.success) {
+        bookings_to_confirm++;
+      }
+      var $row = $('<tr></tr>');
+      var style = 'style="color: ' + color + ';"';
+      var count = index + 1;
+      $row.append('<td ' + style + '>' + count + '</td>')
+      $row.append('<td ' + style + '>' + format_date(booking.date_start) + '</td>');
+      $row.append('<td ' + style + '>' + format_date(booking.date_end) + '</td>');
+      var message = booking.result.message == null ? '-' : booking.result.message;
+      $row.append('<td '+ style + '">' + message + '</td>');
+      $tbody.append($row);
+    });
 
-      var $table = $(
-        '<table class="wp-list-tables widefat"><thead><tr>' +
-          '<th style="width: 30px;"><?= ___('NR', 'commons-booking-admin-booking', 'nr') ?></th>' +
-          '<th style="width: 100px;"><?= ___('FROM', 'commons-booking-admin-booking', 'from') ?></th>' +
-          '<th style="width: 100px;"><?= ___('UNTIL', 'commons-booking-admin-booking', 'until') ?></th>' +
-          '<th><?= ___('ERROR', 'commons-booking-admin-booking', 'error') ?></th>' +
-        '</tr></head></table>'
-      );
-      var $tbody = $('<tbody></tbody>');
+    var disabled = bookings_to_confirm == 0;
+    $confirm_button.prop('disabled', disabled);
+  }
 
-      var bookings_to_confirm = 0;
-      data.bookings.forEach(function(booking, index) {
-        var color = booking.result.success == true ? 'rgb(50, 55, 60)' : '#a00';
-        if(booking.result.success) {
-          bookings_to_confirm++;
-        }
-        var $row = $('<tr></tr>');
-        var style = 'style="color: ' + color + ';"';
-        var count = index + 1;
-        $row.append('<td ' + style + '>' + count + '</td>')
-        $row.append('<td ' + style + '>' + format_date(booking.date_start) + '</td>');
-        $row.append('<td ' + style + '>' + format_date(booking.date_end) + '</td>');
-        var message = booking.result.message == null ? '-' : booking.result.message;
-        $row.append('<td '+ style + '">' + message + '</td>');
-        $tbody.append($row);
-      })
-      $table.append($tbody);
-
-      $dialog.html($table);
-
-      var disabled = bookings_to_confirm == 0 ? ' disabled' : ''
-      var $confirm_button = $('<button class="button action" style="margin-top: 10px; float: right;"' + disabled + '><?= ___('CONFIRM', 'commons-booking-admin-booking', 'confirm') ?></button>');
-
-      $confirm_button.click(function() {
-        $confirm_button.prop('disabled', true);
-        var $form = $('#admin-booking-form');
-        $form.submit();
-      });
-
-      $dialog.append($confirm_button);
-
-    },
-    close: function() {
-      $overlay.hide();
-    },
-    create: function () {
-
-    },
+  var $confirm_button = $('#booking-serial-confirm-button');
+  $confirm_button.click(function() {
+    $confirm_button.prop('disabled', true);
+    var $form = $('#admin-booking-form');
+    $form.submit();
   });
 
   /*** edit booking ***/
