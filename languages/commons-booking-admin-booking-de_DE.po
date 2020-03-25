@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: cb-admin-booking\n"
-"POT-Creation-Date: 2020-03-25 18:19+0100\n"
-"PO-Revision-Date: 2020-03-25 18:19+0100\n"
+"POT-Creation-Date: 2020-03-25 21:51+0100\n"
+"PO-Revision-Date: 2020-03-25 21:51+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -252,13 +252,16 @@ msgstr "Buchungsübersicht"
 msgid "EDIT_BOOKING"
 msgstr "Buchung bearbeiten"
 
-#: ../templates/bookings-template.php:318
-msgid "EDIT"
-msgstr "anpassen"
-
 #: ../templates/bookings-template.php:374
 msgid "LOADING"
 msgstr "lade..."
+
+#: ../templates/bookings-template.php:395
+msgid "APPLY_BOOKING_DATA"
+msgstr "Buchungsdaten übernehmen"
+
+#~ msgid "EDIT"
+#~ msgstr "anpassen"
 
 #~ msgid "EMAIL_SENT"
 #~ msgstr "Eine Bestätigungsmail wurde versandt."

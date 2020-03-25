@@ -315,10 +315,10 @@ jQuery(document).ready(function ($) {
       var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
       if(status != 'pending') {
 
-        var $button = $('<a id="show-booking-edit" class="button thickbox" style="padding-top: 4px; line-height: 18px;" href="#TB_inline?&width=500&height=350&inlineId=booking-edit-modal" title="<?= ___('EDIT_BOOKING', 'commons-booking-admin-booking', 'edit booking') ?>"><?= ___('EDIT', 'commons-booking-admin-booking', 'edit') ?></a>');
-        $table_row.find('td:last').append($button);
+        var $edit_button = $('<a id="show-booking-edit" class="button thickbox" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px; padding-top: 4px; line-height: 18px;" href="#TB_inline?&width=500&height=350&inlineId=booking-edit-modal" title="<?= ___('EDIT_BOOKING', 'commons-booking-admin-booking', 'edit booking') ?>"><span class="dashicons dashicons-edit"></span></a>');
+        $table_row.find('td:last').append($edit_button);
 
-        $button.click(function(e) {
+        $edit_button.click(function(e) {
           e.preventDefault();
           $('#booking-edit-notice-wrapper').html('');
 
@@ -390,6 +390,45 @@ jQuery(document).ready(function ($) {
           });
         });
       }
+
+      //copy booking data to create field
+      var $copy_button = $('<button class="button" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px;" title="<?= ___('APPLY_BOOKING_DATA', 'commons-booking-admin-booking', 'apply booking data') ?>"><span style="line-height: 30px;" class="dashicons dashicons-forms"</button>');
+      $table_row.find('td:last').append($copy_button);
+
+      $copy_button.click(function (e) {
+        e.preventDefault();
+
+        var item_name = $table_row.find('td').eq(1).contents().get(0).innerText;
+        var $item_select = $('#admin-booking-form select[name="item_id"]');
+        $item_select.find('option').each(function() {
+          var $option = $(this);
+          if($option.text() == item_name) {
+            $item_select.val($option.val());
+          }
+        });
+
+        //user
+        var $table_cell = $table_row.find('td').eq(5);
+        var user_name = $table_cell.contents().get(0).innerText;
+        var user_id = $table_cell.find('a')[0].search.split('=')[1]
+
+        var $user_selectize_container = $('#admin-booking-form select[name="user_id"]').siblings('.selectize-control');
+        var $user_input = $user_selectize_container.find('input');
+
+        $user_input.val(user_name);
+        $user_input.css('width', '80%')
+        $('#admin-booking-form select[name="user_id"]').find('option').val(9);
+        $('#admin-booking-form select[name="user_id"]').val(9);
+
+        //dates
+        var date_end_str = $table_row.find('td').eq(3).contents().get(0).nodeValue;
+        var date_end = new Date(Date.parse(date_end_str));
+        date_end.setDate(date_end.getDate() + 1);
+        date_end_str = date_end.toISOString().split('T')[0];
+        $('#admin-booking-form input[name="date_start"]').val(date_end_str);
+        $('#admin-booking-form input[name="date_end"]').val(date_end_str);
+      });
+
     });
 
     //update form submit
