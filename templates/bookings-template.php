@@ -400,9 +400,10 @@ jQuery(document).ready(function ($) {
           var table_row_index = $('#booking-edit-form > input[name="table_row_index"]').val()
           var $table_row = $($table_body.find('tr')[table_row_index]);
 
-          $table_row.find('td').eq(2).contents().get(0).nodeValue = payload.date_start;
-          $table_row.find('td').eq(3).contents().get(0).nodeValue = payload.date_end;
-
+          if(res.success) {
+            $table_row.find('td').eq(2).contents().get(0).nodeValue = payload.date_start;
+            $table_row.find('td').eq(3).contents().get(0).nodeValue = payload.date_end;
+          }
           render_notice(res.success, res.message);
         }
       }).always(function() {
