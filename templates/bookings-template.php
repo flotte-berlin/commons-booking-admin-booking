@@ -101,7 +101,7 @@
     <input name="table_row_index" type="hidden">
     <?php include( CB_ADMIN_BOOKING_PATH . 'templates/booking-details-template.php' ); ?>
 
-    <input type="submit" id="submit-booking-edit" class="button" style="float: right; width: 100px;" value="<?= ___( 'UPDATE', 'commons-booking-admin-booking', 'update') ?>">
+    <input type="submit" id="submit-booking-edit" class="button" style="margin-top: 10px; float: right; width: 100px;" value="<?= ___( 'UPDATE', 'commons-booking-admin-booking', 'update') ?>">
   </form>
 
 </div>
@@ -311,53 +311,85 @@ jQuery(document).ready(function ($) {
     //collect booking ids
     $table_body_rows.each(function(table_row_index, table_row) {
       var $table_row = $(table_row);
-      //var $button = $('<button class="button edit-booking"><?/*= ___('EDIT', 'commons-booking-admin-booking', 'edit')*/ ?></button>');
-      var $button = $('<a id="show-booking-edit" class="button thickbox" style="padding-top: 4px; line-height: 18px;" href="#TB_inline?&width=500&height=350&inlineId=booking-edit-modal" title="<?= ___('EDIT_BOOKING', 'commons-booking-admin-booking', 'edit booking') ?>"><?= ___('EDIT', 'commons-booking-admin-booking', 'edit') ?></a>');
-      $table_row.find('td:last').append($button);
 
-      $button.click(function(e) {
-        e.preventDefault();
-        $('#booking-edit-notice-wrapper').html('');
+      var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
+      if(status != 'pending') {
 
-        var item = $table_row.find('td').eq(1).contents().get(0).innerText;
-        $('#bem-item').html(item);
+        var $button = $('<a id="show-booking-edit" class="button thickbox" style="padding-top: 4px; line-height: 18px;" href="#TB_inline?&width=500&height=350&inlineId=booking-edit-modal" title="<?= ___('EDIT_BOOKING', 'commons-booking-admin-booking', 'edit booking') ?>"><?= ___('EDIT', 'commons-booking-admin-booking', 'edit') ?></a>');
+        $table_row.find('td:last').append($button);
 
-        var user = $table_row.find('td').eq(5).contents().get(0).innerText;
-        $('#bem-user').html(user);
-        var location = $table_row.find('td').eq(6).contents().get(0).innerText;
-        $('#bem-location').html(location);
-        var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
-        $('#bem-status').html(status);
+        $button.click(function(e) {
+          e.preventDefault();
+          $('#booking-edit-notice-wrapper').html('');
 
-        $('#booking-edit-form input[name="table_row_index"]').val(table_row_index);
+          //boking data table
+          var item = $table_row.find('td').eq(1).contents().get(0).innerText;
+          $('#bem-item').html(item);
 
-        var booking_id = $table_row.find('td:first').contents().get(0).nodeValue;
-        $('#booking-edit-form input[name="booking_id"]').val(booking_id);
+          var user = $table_row.find('td').eq(5).contents().get(0).innerText;
+          $('#bem-user').html(user);
+          var location = $table_row.find('td').eq(6).contents().get(0).innerText;
+          $('#bem-location').html(location);
 
-        var date_start = $table_row.find('td').eq(2).contents().get(0).nodeValue;
-        $('#booking-edit-form input[name="date_start"]').val(date_start);
+          var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
+          $('#bem-status').html(status);
 
-        var date_end = $table_row.find('td').eq(3).contents().get(0).nodeValue;
-        $('#booking-edit-form input[name="date_end"]').val(date_end);
+          //form values
+          $('#booking-edit-form input[name="table_row_index"]').val(table_row_index);
 
-        $('#booking-edit-form input[name="comment"]').val('');
-        //load booking comment
-        $('#booking-edit-form input[name="comment"]').prop('disabled', true);
-        jQuery.ajax({
-          url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
-          type: 'POST',
-          dataType: 'JSON',
-          data: {action : 'get_booking_comment', booking_id: booking_id},
-          error: function(res) {
-            console.error('comment error:', res);
+          var booking_id = $table_row.find('td:first').contents().get(0).nodeValue;
+          $('#booking-edit-form input[name="booking_id"]').val(booking_id);
 
-          },
-          success: function(res) {
-            $('#booking-edit-form input[name="comment"]').prop('disabled', false);
-            $('#booking-edit-form input[name="comment"]').val(res.comment);
+          var date_start = $table_row.find('td').eq(2).contents().get(0).nodeValue;
+          var date_end = $table_row.find('td').eq(3).contents().get(0).nodeValue;
+          $('#booking-edit-form input[name="date_start"]').val(date_start);
+          $('#booking-edit-form input[name="date_start"]').attr('min', date_start);
+          $('#booking-edit-form input[name="date_start"]').attr('max', date_end);
+
+          $('#booking-edit-form input[name="date_end"]').val(date_end);
+          $('#booking-edit-form input[name="date_end"]').attr('min', date_start);
+          $('#booking-edit-form input[name="date_end"]').attr('max', date_end);
+
+          //enable/disable date fields based on booking status
+          var past = new Date(Date.parse(date_end)).setHours(23, 59, 59) < new Date();
+          if(status == 'canceled' || status == 'blocked' || past) {
+            $('#booking-edit-form input[name="date_end"]').prop('disabled', true);
+            $('#booking-edit-form input[name="date_start"]').prop('disabled', true);
+
+            $('#booking-edit-form input[name="ignore_closed_days"]').parent().hide();
+            $('#booking-edit-form input[name="ignore_blocking_item_usage_restriction"]').parent().hide();
+            $('#booking-edit-form input[name="send_mail"]').parent().hide();
           }
+          else {
+            $('#booking-edit-form input[name="date_end"]').prop('disabled', false);
+            $('#booking-edit-form input[name="date_start"]').prop('disabled', false);
+
+            $('#booking-edit-form input[name="ignore_closed_days"]').parent().show();
+            $('#booking-edit-form input[name="ignore_blocking_item_usage_restriction"]').parent().show();
+            $('#booking-edit-form input[name="send_mail"]').parent().show();
+          }
+
+          //load booking comment
+          $('#booking-edit-form input[name="comment"]').val('');
+          $('#booking-edit-form input[name="comment"]').attr('placeholder', '<?= ___( 'LOADING', 'commons-booking-admin-booking', 'loading...') ?>');
+          $('#booking-edit-form input[name="comment"]').prop('disabled', true);
+          jQuery.ajax({
+            url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
+            type: 'POST',
+            dataType: 'JSON',
+            data: {action : 'get_booking_comment', booking_id: booking_id},
+            error: function(res) {
+              console.error('comment error:', res);
+
+            },
+            success: function(res) {
+              $('#booking-edit-form input[name="comment"]').prop('disabled', false);
+              $('#booking-edit-form input[name="comment"]').attr('placeholder', '');
+              $('#booking-edit-form input[name="comment"]').val(res.comment);
+            }
+          });
         });
-      });
+      }
     });
 
     //update form submit

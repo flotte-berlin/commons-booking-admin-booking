@@ -95,6 +95,10 @@ class CB_Admin_Booking_Admin {
       $data['date_end'] = $_REQUEST['date_end'];
     }
 
+    if(strlen($data['comment']) == 0) {
+      $errors[] = ___('NO_COMMENT', 'commons-booking-admin-booking', 'the comment is missing');
+    }
+
     return array('data' => $data, 'errors' => $errors);
 
   }
@@ -194,7 +198,7 @@ class CB_Admin_Booking_Admin {
   /**
   * check start/end date for logical error
   **/
-  function check_dates_start_end($date_start, $date_end) {
+  function check_dates_start_end($date_start, $date_end, $booking_data = null) {
 
     $booking_result = [
       'success' => true,
@@ -204,7 +208,18 @@ class CB_Admin_Booking_Admin {
     if( strtotime($date_start) > strtotime($date_end)) {
       $booking_result['success'] = false;
       $booking_result['message'] = ___('START_DATE_AFTER_END_DATE', 'commons-booking-admin-booking', 'end date must be after start date');
+    }
 
+    if($booking_data) {
+      if(new DateTime($date_end) > new DateTime($booking_data['date_end'])) {
+        $booking_result['success'] = false;
+        $booking_result['message'] = ___('END_DATE_NOT_ALLOWED', 'commons-booking-admin-booking', 'end date not allowed');
+      }
+
+      if(new DateTime($date_start) < new DateTime($booking_data['date_start'])) {
+        $booking_result['success'] = false;
+        $booking_result['message'] = ___('START_DATE_NOT_ALLOWED', 'commons-booking-admin-booking', 'start date not allowed');
+      }
     }
 
     return $booking_result;
@@ -736,14 +751,49 @@ class CB_Admin_Booking_Admin {
   }
 
   function handle_booking_edit() {
+    error_reporting(E_ALL);
     load_plugin_textdomain( 'commons-booking-admin-booking', false, CB_ADMIN_LANG_PATH );
 
-    $validation_result = $this->validate_booking_edit_form_input();
-    $data = $validation_result['data'];
+    $booking_id = isset($_POST['booking_id']) && (int) $_POST['booking_id'] > 0 ? (int) $_POST['booking_id'] : null;
+    if($booking_id) {
+      //load booking with given id
+      $cb_booking = new CB_Booking();
+      $booking_data = $cb_booking->get_booking($booking_id);
 
-    $this->parse_validation_errors_and_respond($validation_result);
+      if($booking_data) {
+        $date_end = new DateTime($booking_data['date_end']);
+        $date_end->setTime(23, 59, 59);
+        $now = new DateTime();
+        $validate_dates = $booking_data['status'] !== 'canceled' && $booking_data['status'] !== 'blocked' && $date_end >= $now;
 
-    $result = $this->check_dates_start_end($data['date_start'], $data['date_end']);
+        $validation_result = $this->validate_booking_edit_form_input($validate_dates);
+        $data = $validation_result['data'];
+
+        $this->parse_validation_errors_and_respond($validation_result);
+
+        if($validate_dates) {
+          $result = $this->check_dates_start_end($data['date_start'], $data['date_end'], $booking_data);
+        }
+        else {
+            $result = [
+              'success' => true,
+              'errors' => []
+            ];
+        }
+      }
+      else {
+        $result = [
+          'success' => false,
+          'errors' => [___('BOOKING_ID_INVALID', 'commons-booking-admin-booking', 'invalid booking')]
+        ];
+      }
+    }
+    else {
+      $result = [
+        'success' => false,
+        'errors' => [___('NO_BOOKING_ID', 'commons-booking-admin-booking', 'no booking id')]
+      ];
+    }
 
     if(!$result['success']) {
       $result['state'] = 'validation';
@@ -751,42 +801,43 @@ class CB_Admin_Booking_Admin {
       return wp_die();
     }
 
-    $result = $this->handle_booking_edit_form_submit($data);
+    $dates_changed = $validate_dates && ($booking_data['date_start'] != $data['date_start'] || $booking_data['date_end'] != $data['date_end']);
+    $result = $this->handle_booking_edit_form_submit($booking_id, $cb_booking, $booking_data, $data, $dates_changed);
     $result['state'] = 'booking';
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
     return wp_die();
 
   }
 
-  function handle_booking_edit_form_submit($data) {
-    //load booking with given id
-    $cb_booking = new CB_Booking();
-    $booking_data = $cb_booking->get_booking($data['booking_id']);
+  function handle_booking_edit_form_submit($booking_id, $cb_booking, $booking_data, $data, $dates_changed) {
 
-    //check conflicts for given dates (ignore current booking)
-    if($booking_data['date_start'] != $data['date_start'] || $booking_data['date_end'] != $data['date_end']) {
-      $booking_result = $this->check_booking_creation($cb_booking, $data['date_start'], $data['date_end'], $booking_data['item_id'], $booking_data['user_id'], $data['ignore_closed_days'], $data['ignore_blocking_item_usage_restriction'], [$data['booking_id']]);
+    if($dates_changed) {
+      //check conflicts for given dates (ignore current booking)
+      $booking_result = $this->check_booking_creation($cb_booking, $data['date_start'], $data['date_end'], $booking_data['item_id'], $booking_data['user_id'], $data['ignore_closed_days'], $data['ignore_blocking_item_usage_restriction'], [$booking_id]);
+
+      if($booking_result['success'] == true) {
+        $update_result = $this->update_booking($booking_id, $data['date_start'], $data['date_end'], $data['send_mail']);
+
+        if($update_result === false) {
+          $booking_result['success'] = false;
+          $booking_result['message'] = ___('BOOKING_UPDATE_ERROR', 'commons-booking-admin-booking', 'An error occured while updating the booking.');
+        }
+        else {
+          $this->save_comment($booking_id, $data['comment']);
+
+          $booking_result['message'] = ___('BOOKING_UPDATED', 'commons-booking-admin-booking', 'The booking was successfully updated.');
+          $booking_result['message'] .= $data['send_mail'] ? ' Eine Bestätigungsmail wurde versandt.' : '';
+        }
+
+      }
     }
     else {
+      $this->save_comment($booking_id, $data['comment']);
+
       $booking_result = [
-        'success' => true
+        'success' => true,
+        'message' => ___('BOOKING_COMMENT_UPDATED', 'commons-booking-admin-booking', 'The booking comment was successfully updated.')
       ];
-    }
-
-    if($booking_result['success'] == true) {
-      $update_result = $this->update_booking($data['booking_id'], $data['date_start'], $data['date_end'], $data['send_mail']);
-
-      if($update_result === false) {
-        $booking_result['success'] = false;
-        $booking_result['message'] = ___('BOOKING_UPDATE_ERROR', 'commons-booking-admin-booking', 'An error occured while updating the booking.');
-      }
-      else {
-        $this->save_comment($data['booking_id'], $data['comment']);
-
-        $booking_result['message'] = ___('BOOKING_UPDATED', 'commons-booking-admin-booking', 'The booking was successfully updated.');
-        $booking_result['message'] .= $data['send_mail'] ? ' Eine Bestätigungsmail wurde versandt.' : '';
-      }
-
     }
 
     echo json_encode($booking_result, JSON_UNESCAPED_UNICODE);
@@ -809,36 +860,38 @@ class CB_Admin_Booking_Admin {
     return $update_result;
   }
 
-  function validate_booking_edit_form_input() {
+  function validate_booking_edit_form_input($validate_dates = true) {
 
     //validation
     $data = array();
     $errors = array();
 
-    $data['booking_id'] = isset($_POST['booking_id']) ? (int) $_POST['booking_id'] : null;
-    $data['date_start'] = isset($_POST['date_start']) && strlen($_REQUEST['date_start']) > 0 ? new DateTime($_POST['date_start']) : null;
-    $data['date_end'] = isset($_POST['date_end']) && strlen($_REQUEST['date_end']) > 0 ? new DateTime($_POST['date_end']) : null;
+    if($validate_dates) {
+      $data['date_start'] = isset($_POST['date_start']) && strlen($_REQUEST['date_start']) > 0 ? new DateTime($_POST['date_start']) : null;
+      $data['date_end'] = isset($_POST['date_end']) && strlen($_REQUEST['date_end']) > 0 ? new DateTime($_POST['date_end']) : null;
+
+      if(!$data['date_start']) {
+        $errors[] = ___('START_DATE_INVALID', 'commons-booking-admin-booking', 'invalid start date');
+      }
+      else {
+        $data['date_start'] = $_REQUEST['date_start'];
+      }
+
+      if(!$data['date_end']) {
+        $errors[] = ___('END_DATE_INVALID', 'commons-booking-admin-booking', 'invalid end date');
+      }
+      else {
+        $data['date_end'] = $_REQUEST['date_end'];
+      }
+    }
+
     $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
     $data['comment'] = sanitize_text_field($_POST['comment']);
     $data['ignore_closed_days'] = isset($_POST['ignore_closed_days']) ? true : false;
     $data['ignore_blocking_item_usage_restriction'] = isset($_POST['ignore_blocking_item_usage_restriction']) ? true : false;
 
-    if(!$data['booking_id']) {
-      $errors[] = ___('BOOKING_ID_INVALID', 'commons-booking-admin-booking', 'invalid booking');
-    }
-
-    if(!$data['date_start']) {
-      $errors[] = ___('START_DATE_INVALID', 'commons-booking-admin-booking', 'invalid start date');
-    }
-    else {
-      $data['date_start'] = $_REQUEST['date_start'];
-    }
-
-    if(!$data['date_end']) {
-      $errors[] = ___('END_DATE_INVALID', 'commons-booking-admin-booking', 'invalid end date');
-    }
-    else {
-      $data['date_end'] = $_REQUEST['date_end'];
+    if(strlen($data['comment']) == 0) {
+      $errors[] = ___('NO_COMMENT', 'commons-booking-admin-booking', 'the comment is missing');
     }
 
     return array('data' => $data, 'errors' => $errors);
