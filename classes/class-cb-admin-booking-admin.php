@@ -215,7 +215,7 @@ class CB_Admin_Booking_Admin {
       $error_list = str_replace(',', ', ', implode(",", $validation_result['errors']));
       $booking_result = [
         'success' => false,
-        'message' => ___('INPUT_ERRORS_OCCURED', 'commons-booking-admin-booking', 'There are input erros in the request.') . ': ' . $error_list
+        'message' => ___('INPUT_ERRORS_OCCURED', 'commons-booking-admin-booking', 'There are input erros in the request') . ': ' . $error_list
       ];
       $booking_result['state'] = 'validation';
 
@@ -431,7 +431,7 @@ class CB_Admin_Booking_Admin {
           $error_list = str_replace(',', ', ', implode(",", $validation_result['errors']));
           $booking_result = [
             'success' => false,
-            'message' => ___('INPUT_ERRORS_OCCURED', 'commons-booking-admin-booking', 'There are input erros in the request.') . ': ' . $error_list
+            'message' => ___('INPUT_ERRORS_OCCURED', 'commons-booking-admin-booking', 'There are input erros in the request') . ': ' . $error_list
           ];
 
         }
@@ -736,6 +736,8 @@ class CB_Admin_Booking_Admin {
   }
 
   function handle_booking_edit() {
+    load_plugin_textdomain( 'commons-booking-admin-booking', false, CB_ADMIN_LANG_PATH );
+
     $validation_result = $this->validate_booking_edit_form_input();
     $data = $validation_result['data'];
 
@@ -757,8 +759,6 @@ class CB_Admin_Booking_Admin {
   }
 
   function handle_booking_edit_form_submit($data) {
-    load_plugin_textdomain( 'commons-booking-admin-booking', false, CB_ADMIN_LANG_PATH );
-
     //load booking with given id
     $cb_booking = new CB_Booking();
     $booking_data = $cb_booking->get_booking($data['booking_id']);
