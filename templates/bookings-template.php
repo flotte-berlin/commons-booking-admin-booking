@@ -291,6 +291,29 @@ jQuery(document).ready(function ($) {
     $confirm_button.prop('disabled', disabled);
   }
 
+  function load_booking_comment(booking_id, form_id) {
+    //load booking comment
+    var $comment_input = $('#' + form_id + ' input[name="comment"]')
+    $comment_input.val('');
+    $comment_input.attr('placeholder', '<?= ___( 'LOADING', 'commons-booking-admin-booking', 'loading...') ?>');
+    $comment_input.prop('disabled', true);
+    jQuery.ajax({
+      url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
+      type: 'POST',
+      dataType: 'JSON',
+      data: {action : 'get_booking_comment', booking_id: booking_id},
+      error: function(res) {
+        console.error('comment error:', res);
+
+      },
+      success: function(res) {
+        $comment_input.prop('disabled', false);
+        $comment_input.attr('placeholder', '');
+        $comment_input.val(res.comment);
+      }
+    });
+  }
+
   var $confirm_button = $('#booking-serial-confirm-button');
   $confirm_button.click(function() {
     $confirm_button.prop('disabled', true);
@@ -369,25 +392,7 @@ jQuery(document).ready(function ($) {
             $('#booking-edit-form input[name="send_mail"]').parent().show();
           }
 
-          //load booking comment
-          $('#booking-edit-form input[name="comment"]').val('');
-          $('#booking-edit-form input[name="comment"]').attr('placeholder', '<?= ___( 'LOADING', 'commons-booking-admin-booking', 'loading...') ?>');
-          $('#booking-edit-form input[name="comment"]').prop('disabled', true);
-          jQuery.ajax({
-            url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
-            type: 'POST',
-            dataType: 'JSON',
-            data: {action : 'get_booking_comment', booking_id: booking_id},
-            error: function(res) {
-              console.error('comment error:', res);
-
-            },
-            success: function(res) {
-              $('#booking-edit-form input[name="comment"]').prop('disabled', false);
-              $('#booking-edit-form input[name="comment"]').attr('placeholder', '');
-              $('#booking-edit-form input[name="comment"]').val(res.comment);
-            }
-          });
+          load_booking_comment(booking_id, 'booking-edit-form');
         });
       }
 
@@ -410,7 +415,7 @@ jQuery(document).ready(function ($) {
         //user
         var $table_cell = $table_row.find('td').eq(5);
         var user_name = $table_cell.contents().get(0).innerText;
-        var user_id = $table_cell.find('a')[0].search.split('=')[1]
+        var user_id = $table_cell.find('a')[0].search.split('=')[1];
 
         var $user_selectize_container = $('#admin-booking-form select[name="user_id"]').siblings('.selectize-control');
         var $user_input = $user_selectize_container.find('input');
@@ -427,6 +432,11 @@ jQuery(document).ready(function ($) {
         date_end_str = date_end.toISOString().split('T')[0];
         $('#admin-booking-form input[name="date_start"]').val(date_end_str);
         $('#admin-booking-form input[name="date_end"]').val(date_end_str);
+
+        //comment
+        var booking_id = $table_row.find('td').eq(0).contents().get(0).nodeValue;
+        console.log('id: ', booking_id);
+        load_booking_comment(booking_id, 'admin-booking-form');
       });
 
     });
