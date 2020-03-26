@@ -425,8 +425,8 @@ jQuery(document).ready(function ($) {
 
             $user_input.val(user_name);
             $user_input.css('width', '80%')
-            $('#admin-booking-form select[name="user_id"]').find('option').val(9);
-            $('#admin-booking-form select[name="user_id"]').val(9);
+            $('#admin-booking-form select[name="user_id"]').find('option').val(user_id);
+            $('#admin-booking-form select[name="user_id"]').val(user_id);
 
             //dates
             var date_end_str = $table_row.find('td').eq(3).contents().get(0).nodeValue;
