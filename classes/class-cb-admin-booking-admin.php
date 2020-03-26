@@ -467,6 +467,13 @@ class CB_Admin_Booking_Admin {
 
     $location = get_posts( $location_posts_args );
 
+    if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php')) {
+      $blocking_user_id = get_option('cb_item_restriction_blocking_user_id', null);
+    }
+    else {
+      $blocking_user_id = null;
+    }
+
     //check if there are at least one location and item created
     if(count($location) > 0 && count($this->cb_items) > 0) {
 

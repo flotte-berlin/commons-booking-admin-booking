@@ -327,6 +327,8 @@ jQuery(document).ready(function ($) {
   //add edit button
   if($table_body) {
 
+    var blocking_user_id = <?= $blocking_user_id ?>;
+
     var booking_ids = [];
 
     var $table_body_rows = $table_body.find('tr');
@@ -334,110 +336,126 @@ jQuery(document).ready(function ($) {
     //collect booking ids
     $table_body_rows.each(function(table_row_index, table_row) {
       var $table_row = $(table_row);
+      var user_id = $table_row.find('td').eq(5).find('a')[0].search.split('=')[1];
 
-      var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
-      if(status != 'pending') {
+      if(user_id && user_id != blocking_user_id) {
+        var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
+        if(status != 'pending') {
 
-        var $edit_button = $('<a id="show-booking-edit" class="button thickbox" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px; padding-top: 4px; line-height: 18px;" href="#TB_inline?&width=500&height=350&inlineId=booking-edit-modal" title="<?= ___('EDIT_BOOKING', 'commons-booking-admin-booking', 'edit booking') ?>"><span class="dashicons dashicons-edit"></span></a>');
-        $table_row.find('td:last').append($edit_button);
+          var $edit_button = $('<a id="show-booking-edit" class="button thickbox" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px; padding-top: 4px; line-height: 18px;" href="#TB_inline?&width=500&height=350&inlineId=booking-edit-modal" title="<?= ___('EDIT_BOOKING', 'commons-booking-admin-booking', 'edit booking') ?>"><span class="dashicons dashicons-edit"></span></a>');
+          $table_row.find('td:last').append($edit_button);
 
-        $edit_button.click(function(e) {
-          e.preventDefault();
-          $('#booking-edit-notice-wrapper').html('');
+          $edit_button.click(function(e) {
+            e.preventDefault();
+            $('#booking-edit-notice-wrapper').html('');
 
-          //boking data table
-          var item = $table_row.find('td').eq(1).contents().get(0).innerText;
-          $('#bem-item').html(item);
+            //boking data table
+            var item = $table_row.find('td').eq(1).contents().get(0).innerText;
+            $('#bem-item').html(item);
 
-          var user = $table_row.find('td').eq(5).contents().get(0).innerText;
-          $('#bem-user').html(user);
-          var location = $table_row.find('td').eq(6).contents().get(0).innerText;
-          $('#bem-location').html(location);
+            var user = $table_row.find('td').eq(5).contents().get(0).innerText;
+            $('#bem-user').html(user);
+            var location = $table_row.find('td').eq(6).contents().get(0).innerText;
+            $('#bem-location').html(location);
 
-          var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
-          $('#bem-status').html(status);
+            var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
+            $('#bem-status').html(status);
 
-          //form values
-          $('#booking-edit-form input[name="table_row_index"]').val(table_row_index);
+            //form values
+            $('#booking-edit-form input[name="table_row_index"]').val(table_row_index);
 
-          var booking_id = $table_row.find('td:first').contents().get(0).nodeValue;
-          $('#booking-edit-form input[name="booking_id"]').val(booking_id);
+            var booking_id = $table_row.find('td:first').contents().get(0).nodeValue;
+            $('#booking-edit-form input[name="booking_id"]').val(booking_id);
 
-          var date_start = $table_row.find('td').eq(2).contents().get(0).nodeValue;
-          var date_end = $table_row.find('td').eq(3).contents().get(0).nodeValue;
-          $('#booking-edit-form input[name="date_start"]').val(date_start);
-          $('#booking-edit-form input[name="date_start"]').attr('min', date_start);
-          $('#booking-edit-form input[name="date_start"]').attr('max', date_end);
+            var date_start = $table_row.find('td').eq(2).contents().get(0).nodeValue;
+            var date_end = $table_row.find('td').eq(3).contents().get(0).nodeValue;
+            $('#booking-edit-form input[name="date_start"]').val(date_start);
+            $('#booking-edit-form input[name="date_start"]').attr('min', date_start);
+            $('#booking-edit-form input[name="date_start"]').attr('max', date_end);
 
-          $('#booking-edit-form input[name="date_end"]').val(date_end);
-          $('#booking-edit-form input[name="date_end"]').attr('min', date_start);
-          $('#booking-edit-form input[name="date_end"]').attr('max', date_end);
+            $('#booking-edit-form input[name="date_end"]').val(date_end);
+            $('#booking-edit-form input[name="date_end"]').attr('min', date_start);
+            $('#booking-edit-form input[name="date_end"]').attr('max', date_end);
 
-          //enable/disable date fields based on booking status
-          var past = new Date(Date.parse(date_end)).setHours(23, 59, 59) < new Date();
-          if(status == 'canceled' || status == 'blocked' || past) {
-            $('#booking-edit-form input[name="date_end"]').prop('disabled', true);
-            $('#booking-edit-form input[name="date_start"]').prop('disabled', true);
+            //enable/disable date fields based on booking status
+            var past = new Date(Date.parse(date_end)).setHours(23, 59, 59) < new Date();
+            if(status == 'canceled' || status == 'blocked' || past) {
+              $('#booking-edit-form input[name="date_end"]').prop('disabled', true);
+              $('#booking-edit-form input[name="date_start"]').prop('disabled', true);
 
-            $('#booking-edit-form input[name="ignore_closed_days"]').parent().hide();
-            $('#booking-edit-form input[name="ignore_blocking_item_usage_restriction"]').parent().hide();
-            $('#booking-edit-form input[name="send_mail"]').parent().hide();
-          }
-          else {
-            $('#booking-edit-form input[name="date_end"]').prop('disabled', false);
-            $('#booking-edit-form input[name="date_start"]').prop('disabled', false);
+              $('#booking-edit-form input[name="ignore_closed_days"]').parent().hide();
+              $('#booking-edit-form input[name="ignore_blocking_item_usage_restriction"]').parent().hide();
+              $('#booking-edit-form input[name="send_mail"]').parent().hide();
+            }
+            else {
+              $('#booking-edit-form input[name="date_end"]').prop('disabled', false);
+              $('#booking-edit-form input[name="date_start"]').prop('disabled', false);
 
-            $('#booking-edit-form input[name="ignore_closed_days"]').parent().show();
-            $('#booking-edit-form input[name="ignore_blocking_item_usage_restriction"]').parent().show();
-            $('#booking-edit-form input[name="send_mail"]').parent().show();
-          }
+              $('#booking-edit-form input[name="ignore_closed_days"]').parent().show();
+              $('#booking-edit-form input[name="ignore_blocking_item_usage_restriction"]').parent().show();
+              $('#booking-edit-form input[name="send_mail"]').parent().show();
+            }
 
-          load_booking_comment(booking_id, 'booking-edit-form');
-        });
+            load_booking_comment(booking_id, 'booking-edit-form');
+          });
+
+          //copy booking data to create field
+          var $copy_button = $('<button class="button" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px;" title="<?= ___('APPLY_BOOKING_DATA', 'commons-booking-admin-booking', 'apply booking data') ?>"><span style="line-height: 30px;" class="dashicons dashicons-forms"</button>');
+          $table_row.find('td:last').append($copy_button);
+
+          $copy_button.click(function (e) {
+            e.preventDefault();
+
+            var item_name = $table_row.find('td').eq(1).contents().get(0).innerText;
+            var $item_select = $('#admin-booking-form select[name="item_id"]');
+            $item_select.find('option').each(function() {
+              var $option = $(this);
+              if($option.text() == item_name) {
+                $item_select.val($option.val());
+              }
+            });
+
+            //user
+            var $table_cell = $table_row.find('td').eq(5);
+            var user_name = $table_cell.contents().get(0).innerText;
+            var user_id = $table_cell.find('a')[0].search.split('=')[1];
+
+            var $user_selectize_container = $('#admin-booking-form select[name="user_id"]').siblings('.selectize-control');
+            var $user_input = $user_selectize_container.find('input');
+
+            $user_input.val(user_name);
+            $user_input.css('width', '80%')
+            $('#admin-booking-form select[name="user_id"]').find('option').val(9);
+            $('#admin-booking-form select[name="user_id"]').val(9);
+
+            //dates
+            var date_end_str = $table_row.find('td').eq(3).contents().get(0).nodeValue;
+            var date_end = new Date(Date.parse(date_end_str));
+            date_end.setDate(date_end.getDate() + 1);
+            date_end_str = date_end.toISOString().split('T')[0];
+            $('#admin-booking-form input[name="date_start"]').val(date_end_str);
+            $('#admin-booking-form input[name="date_end"]').val(date_end_str);
+
+            //comment
+            var booking_id = $table_row.find('td').eq(0).contents().get(0).nodeValue;
+            console.log('id: ', booking_id);
+            load_booking_comment(booking_id, 'admin-booking-form');
+          });
+        }
       }
-
-      //copy booking data to create field
-      var $copy_button = $('<button class="button" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px;" title="<?= ___('APPLY_BOOKING_DATA', 'commons-booking-admin-booking', 'apply booking data') ?>"><span style="line-height: 30px;" class="dashicons dashicons-forms"</button>');
-      $table_row.find('td:last').append($copy_button);
-
-      $copy_button.click(function (e) {
-        e.preventDefault();
-
+      else {
+        var restricted_item_id;
         var item_name = $table_row.find('td').eq(1).contents().get(0).innerText;
         var $item_select = $('#admin-booking-form select[name="item_id"]');
         $item_select.find('option').each(function() {
           var $option = $(this);
           if($option.text() == item_name) {
-            $item_select.val($option.val());
+            restricted_item_id = $option.val();
           }
         });
-
-        //user
-        var $table_cell = $table_row.find('td').eq(5);
-        var user_name = $table_cell.contents().get(0).innerText;
-        var user_id = $table_cell.find('a')[0].search.split('=')[1];
-
-        var $user_selectize_container = $('#admin-booking-form select[name="user_id"]').siblings('.selectize-control');
-        var $user_input = $user_selectize_container.find('input');
-
-        $user_input.val(user_name);
-        $user_input.css('width', '80%')
-        $('#admin-booking-form select[name="user_id"]').find('option').val(9);
-        $('#admin-booking-form select[name="user_id"]').val(9);
-
-        //dates
-        var date_end_str = $table_row.find('td').eq(3).contents().get(0).nodeValue;
-        var date_end = new Date(Date.parse(date_end_str));
-        date_end.setDate(date_end.getDate() + 1);
-        date_end_str = date_end.toISOString().split('T')[0];
-        $('#admin-booking-form input[name="date_start"]').val(date_end_str);
-        $('#admin-booking-form input[name="date_end"]').val(date_end_str);
-
-        //comment
-        var booking_id = $table_row.find('td').eq(0).contents().get(0).nodeValue;
-        console.log('id: ', booking_id);
-        load_booking_comment(booking_id, 'admin-booking-form');
-      });
+        var $restriction_button = $('<a class="button" href="admin.php?page=cb_item_usage_restriction&restriction_list_type=1&restriction_list_cb_item_id=' + restricted_item_id + '" target="__blank" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px;" title="<?= ___('ITEM_USAGE_RESTRICTIONS', 'commons-booking-admin-booking', 'item usage restrictions') ?>"><span style="line-height: 30px;" class="dashicons dashicons-admin-tools"</a>');
+        $table_row.find('td:last').append($restriction_button);
+      }
 
     });
 
@@ -491,6 +509,7 @@ jQuery(document).ready(function ($) {
         stop_loading($('#submit-booking-edit'), loading);
       });
     });
+
   }
 });
 
