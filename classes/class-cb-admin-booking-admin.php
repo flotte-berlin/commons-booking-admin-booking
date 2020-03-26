@@ -105,6 +105,20 @@ class CB_Admin_Booking_Admin {
 
   function check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days, $ignore_blocking_item_usage_restriction, $ignore_bookings_by_id = []) {
 
+    //bookings not allowed for blocking user
+    if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php')) {
+      $blocking_user_id = get_option('cb_item_restriction_blocking_user_id', null);
+      if($user_id == $blocking_user_id) {
+        $user = get_user_by('id', $user_id);
+        $booking_result = [
+          'success' => false,
+          'message' => sprintf(___('BOOKING_FOR_USER_NOT_ALLOWED', 'commons-booking-admin-booking', 'For user %s is booking not allowed.'), $user->display_name)
+        ];
+
+        return $booking_result;
+      }
+    }
+
     //check if location (timeframe) exists
     $location_id = $cb_booking->get_booking_location_id($date_start, $date_end, $item_id);
     $booking_result = [
@@ -722,11 +736,15 @@ class CB_Admin_Booking_Admin {
 
     $result = [];
 
+    $blocking_user_id = get_option('cb_item_restriction_blocking_user_id', null);
+
     foreach ($totalusers as $user) {
-      $result[] = [
-        "id" => $user->ID,
-        "name" => $user->first_name . ' ' . $user->last_name . ' (' . $user->display_name . ')',
-      ];
+      if($blocking_user_id != $user->ID) {
+        $result[] = [
+          "id" => $user->ID,
+          "name" => $user->first_name . ' ' . $user->last_name . ' (' . $user->display_name . ')',
+        ];
+      }
     }
 
     echo json_encode($result);
