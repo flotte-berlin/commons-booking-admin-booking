@@ -400,7 +400,7 @@ jQuery(document).ready(function ($) {
           });
 
           //copy booking data to create field
-          var $copy_button = $('<button class="button" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px;" title="<?= ___('APPLY_BOOKING_DATA', 'commons-booking-admin-booking', 'apply booking data') ?>"><span style="line-height: 30px;" class="dashicons dashicons-forms"</button>');
+          var $copy_button = $('<button class="button" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px;" title="<?= ___('APPLY_BOOKING_DATA', 'commons-booking-admin-booking', 'apply booking data') ?>"><span style="line-height: 30px;" class="dashicons dashicons-admin-page"</button>');
           $table_row.find('td:last').append($copy_button);
 
           $copy_button.click(function (e) {
