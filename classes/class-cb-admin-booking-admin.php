@@ -173,11 +173,7 @@ class CB_Admin_Booking_Admin {
         if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php') && $ignore_blocking_item_usage_restriction) {
           $blocking_user_id = get_option('cb_item_restriction_blocking_user_id', null);
           if($blocking_user_id) {
-            foreach ($conflict_bookings as $conflict_booking) {
-              if($conflict_booking->user_id == $blocking_user_id) {
-                $conflict_bookings_count--;
-              }
-            }
+            $conflict_bookings_count = $this->check_conflict_bookings_in_item_usage_restriction($blocking_user_id, $conflict_bookings, $date_start, $date_end);
           }
         }
 
@@ -207,6 +203,94 @@ class CB_Admin_Booking_Admin {
       $booking_result['message'] = ___('NO_TIMEFRAME_AVAILABLE', 'commons-booking-admin-booking', 'For the wanted booking no timeframe is existing yet - you have to create one first.');
       return $booking_result;
     }
+  }
+
+  function check_conflict_bookings_in_item_usage_restriction($blocking_user_id, $conflict_bookings, $date_start, $date_end) {
+    error_reporting(E_ALL);
+    $conflict_bookings_count = 0;
+
+    $duration_length = $this->date_difference($date_start, $date_end) + 1;
+    $day_column = [];
+    $matrix = [];
+    $day_column_weights = [];
+    $day_booking_deadline = [];
+
+    $day_column = array_pad($day_column , count($conflict_bookings) , 0);
+    $matrix = array_pad($matrix , $duration_length , $day_column);
+    $day_column_weights = array_pad($day_column_weights , $duration_length , 0);
+    $day_booking_deadline = array_pad($day_booking_deadline , $duration_length , null);
+
+    foreach($conflict_bookings as $booking_index => $conflict_booking) {
+      $date_time = new DateTime($date_start);
+      $date_time->setTime(12, 0, 0);
+
+      $booking_date_time_start = new DateTime($conflict_booking->date_start);
+      $booking_date_time_start->setTime(0, 0, 0);
+      $booking_date_time_end = new DateTime($conflict_booking->date_end);
+      $booking_date_time_end->setTime(23, 59, 59);
+
+      //first step: consider only blocking bookings
+      for($d = 0; $d < $duration_length; $d++) {
+        if($date_time > $booking_date_time_start && $date_time < $booking_date_time_end) {
+          if($conflict_booking->user_id == $blocking_user_id) {
+            $day_booking_deadline[$d] = new DateTime($conflict_booking->booking_time);
+            $matrix[$d][$booking_index] = -1; //weight
+          }
+        }
+        $date_time->modify('+1 day');
+      }
+
+      //second step: consider other bookings
+      $date_time = new DateTime($date_start);
+      $date_time->setTime(12, 0, 0);
+      for($d = 0; $d < $duration_length; $d++) {
+        if($date_time > $booking_date_time_start && $date_time < $booking_date_time_end) {
+          if($conflict_booking->user_id != $blocking_user_id) {
+            //booking was created after a parallel blocking booking
+            if($day_booking_deadline[$d] && new DateTime($conflict_booking->booking_time) > $day_booking_deadline[$d]) {
+              $weight = 2;
+            }
+            else {
+              $weight = 1;
+            }
+            $matrix[$d][$booking_index] = $weight;
+          }
+        }
+        $date_time->modify('+1 day');
+      }
+
+    }
+
+    //sum up all weights of a column
+    foreach($matrix as $column_index => $day_column) {
+      foreach ($day_column as $weight) {
+        $day_column_weights[$column_index] += $weight;
+      }
+    }
+
+    //sum up overall weights of all columns (only if > 0)
+    foreach($day_column_weights as $day_column_weight) {
+      if($day_column_weight > 0) {
+        $conflict_bookings_count++;
+      }
+    }
+
+    //error_log('$matrix: ' . json_encode($matrix));
+    //error_log('$day_booking_deadline: ' . json_encode($day_booking_deadline));
+    //error_log('$day_column_weights: ' . json_encode($day_column_weights));
+    //error_log('$conflict_bookings_count: ' . json_encode($conflict_bookings_count));
+
+    return $conflict_bookings_count;
+  }
+
+  function date_difference($date_1 , $date_2 , $differenceFormat = '%a' )
+  {
+      $datetime1 = date_create($date_1);
+      $datetime2 = date_create($date_2);
+
+      $interval = date_diff($datetime1, $datetime2);
+
+      return $interval->format($differenceFormat);
   }
 
   /**
@@ -776,7 +860,7 @@ class CB_Admin_Booking_Admin {
   }
 
   function handle_booking_edit() {
-    error_reporting(E_ALL);
+    //error_reporting(E_ALL);
     load_plugin_textdomain( 'commons-booking-admin-booking', false, CB_ADMIN_LANG_PATH );
 
     $booking_id = isset($_POST['booking_id']) && (int) $_POST['booking_id'] > 0 ? (int) $_POST['booking_id'] : null;

@@ -17,7 +17,7 @@
 </div>
 <?php if($render_ibiur_option): ?>
   <div style="width: 100%; float: left; margin-top: 5px;">
-    <input type="checkbox" name="ignore_blocking_item_usage_restriction" <?= $ignore_blocking_item_usage_restriction ? 'checked' : ''?>><?= ___( 'IGNORE_BLOCKING_ITEM_USAGE_RESTRICTION', 'commons-booking-admin-booking', 'ignore intersection with existing item usage restriction (total breakdown)') ?>
+    <input type="checkbox" name="ignore_blocking_item_usage_restriction" <?= $ignore_blocking_item_usage_restriction ? 'checked' : ''?>><?= ___( 'IGNORE_BLOCKING_ITEM_USAGE_RESTRICTION', 'commons-booking-admin-booking', 'ignore intersection with existing item usage restriction (total breakdown) and bookings inside (that were created before restriction)') ?>
   </div>
 <?php endif; ?>
 <div style="width: 100%; float: left; margin-top: 5px;">

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: cb-admin-booking\n"
-"POT-Creation-Date: 2020-03-26 18:58+0100\n"
-"PO-Revision-Date: 2020-03-26 19:10+0100\n"
+"POT-Creation-Date: 2020-03-26 22:05+0100\n"
+"PO-Revision-Date: 2020-03-26 22:06+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -35,17 +35,17 @@ msgid "USER_INVALID"
 msgstr "NutzerIn ungültig"
 
 #: ../classes/class-cb-admin-booking-admin.php:85
-#: ../classes/class-cb-admin-booking-admin.php:895
+#: ../classes/class-cb-admin-booking-admin.php:983
 msgid "START_DATE_INVALID"
 msgstr "Anfangsdatum ungültig"
 
 #: ../classes/class-cb-admin-booking-admin.php:92
-#: ../classes/class-cb-admin-booking-admin.php:902
+#: ../classes/class-cb-admin-booking-admin.php:990
 msgid "END_DATE_INVALID"
 msgstr "Enddatum ungültig"
 
 #: ../classes/class-cb-admin-booking-admin.php:99
-#: ../classes/class-cb-admin-booking-admin.php:915
+#: ../classes/class-cb-admin-booking-admin.php:1003
 msgid "NO_COMMENT"
 msgstr "fehlender Kommentar"
 
@@ -53,85 +53,85 @@ msgstr "fehlender Kommentar"
 msgid "BOOKING_FOR_USER_NOT_ALLOWED"
 msgstr "Für NutzerIn %s ist das Buchen nicht erlaubt."
 
-#: ../classes/class-cb-admin-booking-admin.php:189
+#: ../classes/class-cb-admin-booking-admin.php:185
 msgid "ALREADY_BOOKING_IN_PERIOD"
 msgstr ""
 "Es ist bereits eine Buchung für den gewünschten Artikel im angegebenen "
 "Zeitraum vorhanden."
 
-#: ../classes/class-cb-admin-booking-admin.php:201
+#: ../classes/class-cb-admin-booking-admin.php:197
 msgid "NO_BOOKING_FOR_CLOSED_DAYS"
 msgstr ""
 "Anfangs- und End-Datum der Buchung dürfen nicht auf einen Tag fallen, an dem "
 "der Standort geschlossen hat (%s)."
 
-#: ../classes/class-cb-admin-booking-admin.php:207
+#: ../classes/class-cb-admin-booking-admin.php:203
 msgid "NO_TIMEFRAME_AVAILABLE"
 msgstr ""
 "Für die gewünschte Buchung existiert noch kein Zeitraum - dieser muss "
 "zunächst erstellt werden."
 
-#: ../classes/class-cb-admin-booking-admin.php:224
+#: ../classes/class-cb-admin-booking-admin.php:308
 msgid "START_DATE_AFTER_END_DATE"
 msgstr "Das Anfangsdatum darf nicht nach dem Enddatum der Buchung liegen."
 
-#: ../classes/class-cb-admin-booking-admin.php:230
+#: ../classes/class-cb-admin-booking-admin.php:314
 msgid "END_DATE_NOT_ALLOWED"
 msgstr "Enddatum nicht erlaubt."
 
-#: ../classes/class-cb-admin-booking-admin.php:235
+#: ../classes/class-cb-admin-booking-admin.php:319
 msgid "START_DATE_NOT_ALLOWED"
 msgstr "Anfangsdatum nicht erlaubt."
 
-#: ../classes/class-cb-admin-booking-admin.php:247
-#: ../classes/class-cb-admin-booking-admin.php:463
+#: ../classes/class-cb-admin-booking-admin.php:331
+#: ../classes/class-cb-admin-booking-admin.php:547
 msgid "INPUT_ERRORS_OCCURED"
 msgstr "Es sind Eingabe-Fehler aufgetreten"
 
-#: ../classes/class-cb-admin-booking-admin.php:309
+#: ../classes/class-cb-admin-booking-admin.php:393
 msgid "BOOKING_CREATED"
 msgstr "Die Buchung wurde angelegt."
 
-#: ../classes/class-cb-admin-booking-admin.php:314
+#: ../classes/class-cb-admin-booking-admin.php:398
 msgid "BOOKING_CREATION_ERROR"
 msgstr "Leider ist beim Anlegen der Buchung ein Fehler aufgetreten."
 
-#: ../classes/class-cb-admin-booking-admin.php:421
+#: ../classes/class-cb-admin-booking-admin.php:505
 msgid "BOOKINGS_CREATED"
 msgstr "Es wurde(n) %s Buchung(en) angelegt."
 
-#: ../classes/class-cb-admin-booking-admin.php:428
+#: ../classes/class-cb-admin-booking-admin.php:512
 msgid "NO_BOOKINGS"
 msgstr "Es gibt keine Buchungen zu erstellen mit den geplanten Vorgaben."
 
-#: ../classes/class-cb-admin-booking-admin.php:525
+#: ../classes/class-cb-admin-booking-admin.php:609
 #: ../templates/bookings-template.php:3
 msgid "CREATE_BOOKING"
 msgstr "Buchung erstellen"
 
-#: ../classes/class-cb-admin-booking-admin.php:526
+#: ../classes/class-cb-admin-booking-admin.php:610
 msgid "NO_LOCATIONS_AND_ITEMS"
 msgstr ""
 "Es müssen Standorte und Artikel vorhanden sein, um Buchungen erstellen zu "
 "können."
 
-#: ../classes/class-cb-admin-booking-admin.php:808
+#: ../classes/class-cb-admin-booking-admin.php:896
 msgid "BOOKING_ID_INVALID"
 msgstr "ungültige Buchung"
 
-#: ../classes/class-cb-admin-booking-admin.php:815
+#: ../classes/class-cb-admin-booking-admin.php:903
 msgid "NO_BOOKING_ID"
 msgstr "keine Buchungs-Id"
 
-#: ../classes/class-cb-admin-booking-admin.php:844
+#: ../classes/class-cb-admin-booking-admin.php:932
 msgid "BOOKING_UPDATE_ERROR"
 msgstr "Leider ist beim Aktualisieren der Buchung ein Fehler aufgetreten."
 
-#: ../classes/class-cb-admin-booking-admin.php:849
+#: ../classes/class-cb-admin-booking-admin.php:937
 msgid "BOOKING_UPDATED"
 msgstr "Die Buchung wurde aktualisiert."
 
-#: ../classes/class-cb-admin-booking-admin.php:860
+#: ../classes/class-cb-admin-booking-admin.php:948
 msgid "BOOKING_COMMENT_UPDATED"
 msgstr "Der Buchungskommentar wurde aktualisiert."
 
