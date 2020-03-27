@@ -205,7 +205,7 @@ class CB_Admin_Booking_Admin {
     }
   }
 
-  function check_conflict_bookings_in_item_usage_restriction($blocking_user_id, $conflict_bookings, $date_start, $date_end) {
+  function check_conflict_bookings_in_item_usage_restriction($blocking_user_id, $conflict_bookings, $date_start, $date_end, $max_day_column_weight = 0) {
     error_reporting(E_ALL);
     $conflict_bookings_count = 0;
 
@@ -270,7 +270,7 @@ class CB_Admin_Booking_Admin {
 
     //sum up overall weights of all columns (only if > 0)
     foreach($day_column_weights as $day_column_weight) {
-      if($day_column_weight > 0) {
+      if($day_column_weight > $max_day_column_weight) {
         $conflict_bookings_count++;
       }
     }
