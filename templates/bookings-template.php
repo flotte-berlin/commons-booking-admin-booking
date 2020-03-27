@@ -166,11 +166,18 @@ jQuery(document).ready(function ($) {
   $('input[name="booking_mode"]').change(function() {
     var booking_mode = $('input[name="booking_mode"]:checked').val();
 
+    $ignore_blocking_iur_input = $('#admin-booking-form input[name="ignore_blocking_item_usage_restriction"]')
+
     if(booking_mode == 2) {
       $('#weekdays-wrapper').show();
+
+      $ignore_blocking_iur_input.prop('checked', false);
+      $ignore_blocking_iur_input.prop('disabled', true);
     }
     else {
       $('#weekdays-wrapper').hide();
+
+      $ignore_blocking_iur_input.prop('disabled', false);
     }
   })
 

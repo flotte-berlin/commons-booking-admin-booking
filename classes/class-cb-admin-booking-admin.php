@@ -482,8 +482,8 @@ class CB_Admin_Booking_Admin {
         $booking_count = 0;
         foreach ($bookings as $booking) {
 
-          //check, if booking is possible
-          $booking_check_result = $this->check_booking_creation($cb_booking, $booking['date_start'], $booking['date_end'], $item_id, $user_id, $ignore_closed_days, $ignore_blocking_item_usage_restriction);
+          //check, if booking is possible - never ignore blocking item usage restriction
+          $booking_check_result = $this->check_booking_creation($cb_booking, $booking['date_start'], $booking['date_end'], $item_id, $user_id, $ignore_closed_days, false);
           $booking['result'] = $booking_check_result;
 
           if($test) {
