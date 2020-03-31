@@ -32,6 +32,9 @@
         <div style="width: 60%; float: left;">
           <label for="user_id"><?= ___( 'FOR_USER', 'commons-booking-admin-booking', 'for user') ?>:</label><br>
           <select name="user_id" placeholder="<?= ___( 'NAME', 'commons-booking-admin-booking', 'name') ?>...">
+            <?php if(isset($user_id) && isset($user_name)): ?>
+              <option value="<?= $user_id ?>"><?= $user_name ?></option>
+            <?php endif; ?>
           </select>
         </div>
       </div>
@@ -198,7 +201,7 @@ jQuery(document).ready(function ($) {
       $submit_button.val(loading_text);
     }, 250);
 
-    return loading_interval
+    return loading_interval;
   }
 
   function stop_loading($submit_button, loading) {
@@ -207,19 +210,33 @@ jQuery(document).ready(function ($) {
     $submit_button.prop("disabled",false);
   }
 
+  //set up fields for booking mode
   $('input[name="booking_mode"]').change();
 
-  $('#submit-booking').click(function(event) {
-    var loading = {};
-    setTimeout(function() {
-      loading.button_text = $('#submit-booking').val();
-      loading.interval = start_loading($('#admin-booking-error-wrapper'), $('#submit-booking'));
-    }, 0);
+  $('#admin-booking-form').submit(function(event, confirmed) {
+
+    var $date_start = $(' #admin-booking-form input[name="date_start"]').first();
+    var $date_end = $('#admin-booking-form input[name="date_end"]').first();
+
+    if(!$date_start.is(':valid') || !$date_end.is(':valid')) {
+      console.log('invalid date')
+
+      $('#admin-booking-form').find(':submit').click();
+      event.preventDefault();
+
+    }
+    else {
+      var loading = {};
+      setTimeout(function() {
+        loading.button_text = $('#submit-booking').val();
+        loading.interval = start_loading($('#admin-booking-error-wrapper'), $('#submit-booking'));
+      }, 0);
+    }
 
     var booking_mode = $('input[name="booking_mode"]:checked').val();
     //console.log('booking_mode: ', booking_mode);
 
-    if(booking_mode == 2) {
+    if(booking_mode == 2 && !confirmed) { //serial booking
       event.preventDefault();
 
       var $form = $('#admin-booking-form');
@@ -325,7 +342,7 @@ jQuery(document).ready(function ($) {
   $confirm_button.click(function() {
     $confirm_button.prop('disabled', true);
     var $form = $('#admin-booking-form');
-    $form.submit();
+    $form.trigger('submit', [true]);
   });
 
   /*** edit booking ***/

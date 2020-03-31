@@ -80,6 +80,13 @@ class CB_Admin_Booking_Admin {
     if(get_userdata($data['user_id']) === false) {
       $errors[] = ___('USER_INVALID', 'commons-booking-admin-booking', 'invalid user');
     }
+    else {
+      $user = get_user_by('id', $data['user_id']);
+
+      if($user) {
+        $data['user_name'] = $user->first_name . ' ' . $user->last_name . ' (' . $user->display_name . ')';
+      }
+    }
 
     if(!$data['date_start_valid']) {
       $errors[] = ___('START_DATE_INVALID', 'commons-booking-admin-booking', 'invalid start date');
@@ -584,6 +591,7 @@ class CB_Admin_Booking_Admin {
       $date_end = !$booking_result['success'] && isset($data['date_end_valid']) ? $data['date_end_valid'] : new DateTime();
 
       $user_id = !$booking_result['success'] && isset($data['user_id']) ? $data['user_id'] : null;
+      $user_name = !$booking_result['success'] && isset($data['user_name']) ? $data['user_name'] : null;
       $item_id = !$booking_result['success'] && isset($data['item_id']) ? $data['item_id'] : null;
 
       $cb_items = $this->cb_items;
