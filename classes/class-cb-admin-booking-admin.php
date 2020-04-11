@@ -3,6 +3,44 @@
 class CB_Admin_Booking_Admin {
 
   /**
+  * when the plugin is activated, add columns to bookings table in db, if they don't exist yet
+  */
+  function activate() {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'cb_bookings';
+
+    if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+
+      if(!$this->table_column_exists($table_name, 'exempt_from_limit')) {
+        $sql = "ALTER TABLE " . $table_name .
+        " ADD exempt_from_limit int(1)";
+
+        $wpdb->query($sql);
+      }
+
+      if(!$this->table_column_exists($table_name, 'usage_during_restriction')) {
+        $sql = "ALTER TABLE " . $table_name .
+        " ADD usage_during_restriction int(1)";
+
+        $wpdb->query($sql);
+      }
+    }
+  }
+
+  function table_column_exists( $table_name, $column_name ) {
+  	global $wpdb;
+  	$column = $wpdb->get_results( $wpdb->prepare(
+  		"SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s ",
+  		DB_NAME, $table_name, $column_name
+  	) );
+  	if ( ! empty( $column ) ) {
+  		return true;
+  	}
+  	return false;
+  }
+
+  /**
   * loads booking creation functionality on booking admin page of Commons Booking plugin
   */
   function load_bookings_creation($async = false) {
@@ -47,7 +85,8 @@ class CB_Admin_Booking_Admin {
     $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
     $data['comment'] = sanitize_text_field($_POST['comment']);
     $data['ignore_closed_days'] = isset($_POST['ignore_closed_days']) ? true : false;
-    $data['ignore_blocking_item_usage_restriction'] = isset($_POST['ignore_blocking_item_usage_restriction']) ? true : false;
+    $data['usage_during_restriction'] = isset($_POST['usage_during_restriction']) ? true : false;
+    $data['exempt_from_limit'] = isset($_POST['exempt_from_limit']) ? true : false;
     $data['booking_mode'] = isset($_POST['booking_mode']) && in_array($_POST['booking_mode'], [1,2]) ? (int) $_POST['booking_mode'] : null;
     $data['weekdays'] = [];
 
@@ -110,7 +149,7 @@ class CB_Admin_Booking_Admin {
 
   }
 
-  function check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days, $ignore_blocking_item_usage_restriction, $ignore_bookings_by_id = []) {
+  function check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days, $usage_during_restriction, $ignore_bookings_by_id = []) {
 
     //bookings not allowed for blocking user
     if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php')) {
@@ -177,7 +216,7 @@ class CB_Admin_Booking_Admin {
       if($ignore_closed_days || $date_start_valid && $date_end_valid) {
         $conflict_bookings_count = count($conflict_bookings);
 
-        if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php') && $ignore_blocking_item_usage_restriction) {
+        if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php') && $usage_during_restriction) {
           $blocking_user_id = get_option('cb_item_restriction_blocking_user_id', null);
           if($blocking_user_id) {
             $conflict_bookings_count = $this->check_conflict_bookings_in_item_usage_restriction($blocking_user_id, $conflict_bookings, $date_start, $date_end);
@@ -377,7 +416,8 @@ class CB_Admin_Booking_Admin {
     $send_mail = $data['send_mail'];
     $comment = $data['comment'];
     $ignore_closed_days = $data['ignore_closed_days'];
-    $ignore_blocking_item_usage_restriction = $data['ignore_blocking_item_usage_restriction'];
+    $usage_during_restriction = $data['usage_during_restriction'];
+    $exempt_from_limit = $data['exempt_from_limit'];
 
     $cb_booking = new CB_Booking();
 
@@ -390,11 +430,19 @@ class CB_Admin_Booking_Admin {
       }
 
       //logical booking precheck
-      $booking_result = $this->check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days, $ignore_blocking_item_usage_restriction);
+      $booking_result = $this->check_booking_creation($cb_booking, $date_start, $date_end, $item_id, $user_id, $ignore_closed_days, $usage_during_restriction);
 
       if($booking_result['success'] == true) {
         $location_id = $cb_booking->get_booking_location_id($date_start, $date_end, $item_id);
-        $booking_id = $this->create_booking($date_start, $date_end, $item_id, $user_id, 'confirmed', $location_id, $send_mail, $comment);
+
+        if($usage_during_restriction) {
+          $blocking_user_id = get_option('cb_item_restriction_blocking_user_id', null);
+          $blocking_bookings = $this->fetch_bookings_in_period($date_start, $date_end, $item_id, $blocking_user_id);
+
+          $usage_during_restriction = count($blocking_bookings) > 0 ? true : false;
+        }
+
+        $booking_id = $this->create_booking($date_start, $date_end, $item_id, $user_id, 'confirmed', $location_id, $send_mail, $comment, $usage_during_restriction, $exempt_from_limit);
 
         if($booking_id) {
           $booking_result['message'] = ___('BOOKING_CREATED', 'commons-booking-admin-booking', 'The booking was created successfully.');
@@ -603,11 +651,12 @@ class CB_Admin_Booking_Admin {
       $send_mail = !$booking_result['success'] && isset($data['send_mail']) ? $data['send_mail'] : null;
 
       if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php')) {
-        $render_ibiur_option = true;
-        $ignore_blocking_item_usage_restriction = !$booking_result['success'] && isset($data['ignore_blocking_item_usage_restriction']) ? $data['ignore_blocking_item_usage_restriction'] : null;
+        $render_ibiur_options = true;
+        $usage_during_restriction = !$booking_result['success'] && isset($data['usage_during_restriction']) ? $data['usage_during_restriction'] : null;
+        $exempt_from_limit = !$booking_result['success'] && isset($data['exempt_from_limit']) ? $data['exempt_from_limit'] : null;
       }
       else {
-        $render_ibiur_option = false;
+        $render_ibiur_options = false;
       }
 
       add_thickbox();
@@ -638,7 +687,7 @@ class CB_Admin_Booking_Admin {
   /**
   * create a booking with given properties
   */
-  function create_booking($date_start, $date_end, $item_id, $user_id, $status, $location_id, $send_mail, $comment) {
+  function create_booking($date_start, $date_end, $item_id, $user_id, $status, $location_id, $send_mail, $comment, $usage_during_restriction = null, $exempt_from_limit = null) {
 
     $cb_booking = new CB_Booking();
 
@@ -649,22 +698,23 @@ class CB_Admin_Booking_Admin {
     $cb_booking->hash = $cb_booking->create_hash();
     $booking_id = $cb_booking->create_booking( $date_start, $date_end, $item_id);
 
+    if($booking_id) {
+
       if(strlen($comment) > 0) {
         $this->save_comment($booking_id, $comment);
       }
 
-      if($booking_id) {
+      $this->save_special_fields($booking_id, $usage_during_restriction, $exempt_from_limit);
 
-        //set status - (default is pending - it will be deleted by Commons Booking cronjob, if it's not confirmed)
-        //set_booking_status is a private method, it has to be made accessible first
-        $method = new ReflectionMethod('CB_Booking', 'set_booking_status');
-        $method->setAccessible(true);
-        $method->invoke($cb_booking, $booking_id, $status);
+      //set status - (default is pending - it will be deleted by Commons Booking cronjob, if it's not confirmed)
+      //set_booking_status is a private method, it has to be made accessible first
+      $method = new ReflectionMethod('CB_Booking', 'set_booking_status');
+      $method->setAccessible(true);
+      $method->invoke($cb_booking, $booking_id, $status);
 
-        if($send_mail) {
-          $this->send_mail($cb_booking, $booking_id);
+      if($send_mail) {
+        $this->send_mail($cb_booking, $booking_id);
       }
-
     }
 
     return $booking_id;
@@ -695,7 +745,12 @@ class CB_Admin_Booking_Admin {
 
     $comment = $this->load_comment($booking_id);
 
-    echo json_encode(['comment' => $comment]);
+    if($comment) {
+      echo json_encode(['comment' => $comment]);
+    }
+    else {
+      echo json_encode([]);
+    }
     wp_die();
   }
 
@@ -718,13 +773,61 @@ class CB_Admin_Booking_Admin {
     $table_name = $wpdb->prefix . 'cb_bookings';
 
     $wpdb->update(
+      $table_name,
+      array(
+        'comment' => $comment,	// string
+      ),
+      array( 'id' => $booking_id ),
+      array(
+        '%s',	// comment
+      ),
+      array( '%d' )
+    );
+  }
+
+  function get_booking_special_fields() {
+    $booking_id = (int) $_POST['booking_id'];
+
+    $data = $this->load_special_fields($booking_id);
+
+    if($data) {
+      echo json_encode(['exempt_from_limit' => $data->exempt_from_limit, 'usage_during_restriction' => $data->usage_during_restriction]);
+    }
+    else {
+      echo json_encode([]);
+    }
+
+    wp_die();
+  }
+
+  function load_special_fields($booking_id) {
+
+    global $wpdb;
+    //get special_fields of booking
+    $table_name = $wpdb->prefix . 'cb_bookings';
+    $select_statement = "SELECT exempt_from_limit, usage_during_restriction FROM $table_name WHERE id = %d";
+    $prepared_statement = $wpdb->prepare($select_statement, $booking_id);
+
+    $row = $wpdb->get_row($prepared_statement);
+
+    return $row;
+  }
+
+  function save_special_fields($booking_id, $usage_during_restriction, $exempt_from_limit) {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'cb_bookings';
+
+    $wpdb->update(
     	$table_name,
     	array(
-    		'comment' => $comment,	// string
+        'usage_during_restriction' => (int) $usage_during_restriction,
+    		'exempt_from_limit' => (int) $exempt_from_limit,
     	),
     	array( 'id' => $booking_id ),
     	array(
-    		'%s',	// comment
+    		'%d',	// usage_during_restriction
+        '%d'	// exempt_from_limit
     	),
     	array( '%d' )
     );
@@ -846,7 +949,7 @@ class CB_Admin_Booking_Admin {
   /**
   * fetches bookings in period determined by start and end date from db for given item
   */
-  function fetch_bookings_in_period($date_start, $date_end, $item_id) {
+  function fetch_bookings_in_period($date_start, $date_end, $item_id, $user_id = null) {
     global $wpdb;
 
     //get bookings data
@@ -859,6 +962,10 @@ class CB_Admin_Booking_Admin {
                         "OR (date_start < '".$date_start."' ".
                         "AND date_end > '".$date_end."')) ".
                         "AND status = 'confirmed'";
+
+    if($user_id) {
+      $select_statement .= " AND user_id = ".$user_id;
+    }
 
     $prepared_statement = $wpdb->prepare($select_statement, $item_id);
 
@@ -930,7 +1037,7 @@ class CB_Admin_Booking_Admin {
 
     if($dates_changed) {
       //check conflicts for given dates (ignore current booking)
-      $booking_result = $this->check_booking_creation($cb_booking, $data['date_start'], $data['date_end'], $booking_data['item_id'], $booking_data['user_id'], $data['ignore_closed_days'], $data['ignore_blocking_item_usage_restriction'], [$booking_id]);
+      $booking_result = $this->check_booking_creation($cb_booking, $data['date_start'], $data['date_end'], $booking_data['item_id'], $booking_data['user_id'], $data['ignore_closed_days'], $data['usage_during_restriction'], [$booking_id]);
 
       if($booking_result['success'] == true) {
         $update_result = $this->update_booking($booking_id, $data['date_start'], $data['date_end'], $data['send_mail']);
@@ -941,6 +1048,7 @@ class CB_Admin_Booking_Admin {
         }
         else {
           $this->save_comment($booking_id, $data['comment']);
+          $this->save_special_fields($booking_id, $data['usage_during_restriction'], $data['exempt_from_limit']);
 
           $booking_result['message'] = ___('BOOKING_UPDATED', 'commons-booking-admin-booking', 'The booking was successfully updated.');
           $booking_result['message'] .= $data['send_mail'] ? ' Eine Bestätigungsmail wurde versandt.' : '';
@@ -950,6 +1058,7 @@ class CB_Admin_Booking_Admin {
     }
     else {
       $this->save_comment($booking_id, $data['comment']);
+      $this->save_special_fields($booking_id, $data['usage_during_restriction'], $data['exempt_from_limit']);
 
       $booking_result = [
         'success' => true,
@@ -1005,7 +1114,8 @@ class CB_Admin_Booking_Admin {
     $data['send_mail'] = isset($_POST['send_mail']) ? true : false;
     $data['comment'] = sanitize_text_field($_POST['comment']);
     $data['ignore_closed_days'] = isset($_POST['ignore_closed_days']) ? true : false;
-    $data['ignore_blocking_item_usage_restriction'] = isset($_POST['ignore_blocking_item_usage_restriction']) ? true : false;
+    $data['usage_during_restriction'] = isset($_POST['usage_during_restriction']) ? true : false;
+    $data['exempt_from_limit'] = isset($_POST['exempt_from_limit']) ? true : false;
 
     if(strlen($data['comment']) == 0) {
       $errors[] = ___('NO_COMMENT', 'commons-booking-admin-booking', 'the comment is missing');

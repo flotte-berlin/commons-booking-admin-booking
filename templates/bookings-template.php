@@ -169,7 +169,7 @@ jQuery(document).ready(function ($) {
   $('input[name="booking_mode"]').change(function() {
     var booking_mode = $('input[name="booking_mode"]:checked').val();
 
-    $ignore_blocking_iur_input = $('#admin-booking-form input[name="ignore_blocking_item_usage_restriction"]')
+    $ignore_blocking_iur_input = $('#admin-booking-form input[name="usage_during_restriction"]')
 
     if(booking_mode == 2) {
       $('#weekdays-wrapper').show();
@@ -338,6 +338,34 @@ jQuery(document).ready(function ($) {
     });
   }
 
+  function load_booking_special_fields(booking_id, form_id) {
+    //load booking special fields
+    var $usage_during_restriction = $('#' + form_id + ' input[name="usage_during_restriction"]');
+    $usage_during_restriction.prop('checked', false);
+    $usage_during_restriction.prop('disabled', true);
+    var $exempt_from_limit = $('#' + form_id + ' input[name="exempt_from_limit"]');
+    $exempt_from_limit.prop('checked', false);
+    $exempt_from_limit.prop('disabled', true);
+
+    jQuery.ajax({
+      url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
+      type: 'POST',
+      dataType: 'JSON',
+      data: {action : 'get_booking_special_fields', booking_id: booking_id},
+      error: function(res) {
+        console.error('special fields error:', res);
+
+      },
+      success: function(res) {
+        $usage_during_restriction.prop('disabled', false);
+        $usage_during_restriction.prop('checked', Boolean(parseInt(res.usage_during_restriction)));
+
+        $exempt_from_limit.prop('disabled', false);
+        $exempt_from_limit.prop('checked', Boolean(parseInt(res.exempt_from_limit)));
+      }
+    });
+  }
+
   var $confirm_button = $('#booking-serial-confirm-button');
   $confirm_button.click(function() {
     $confirm_button.prop('disabled', true);
@@ -366,7 +394,7 @@ jQuery(document).ready(function ($) {
         var status = $table_row.find('td').eq(8).contents().get(0).nodeValue;
         if(status != 'pending') {
 
-          var $edit_button = $('<a id="show-booking-edit" class="button thickbox" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px; padding-top: 4px; line-height: 18px;" href="#TB_inline?&width=500&height=350&inlineId=booking-edit-modal" title="<?= ___('EDIT_BOOKING', 'commons-booking-admin-booking', 'edit booking') ?>"><span class="dashicons dashicons-edit"></span></a>');
+          var $edit_button = $('<a id="show-booking-edit" class="button thickbox" style="margin-right: 5px; margin-bottom: 5px; margin-top: 5px; padding-top: 4px; line-height: 18px;" href="#TB_inline?&width=500&height=380&inlineId=booking-edit-modal" title="<?= ___('EDIT_BOOKING', 'commons-booking-admin-booking', 'edit booking') ?>"><span class="dashicons dashicons-edit"></span></a>');
           $table_row.find('td:last').append($edit_button);
 
           $edit_button.click(function(e) {
@@ -408,7 +436,6 @@ jQuery(document).ready(function ($) {
               $('#booking-edit-form input[name="date_start"]').prop('disabled', true);
 
               $('#booking-edit-form input[name="ignore_closed_days"]').parent().hide();
-              $('#booking-edit-form input[name="ignore_blocking_item_usage_restriction"]').parent().hide();
               $('#booking-edit-form input[name="send_mail"]').parent().hide();
             }
             else {
@@ -416,11 +443,11 @@ jQuery(document).ready(function ($) {
               $('#booking-edit-form input[name="date_start"]').prop('disabled', false);
 
               $('#booking-edit-form input[name="ignore_closed_days"]').parent().show();
-              $('#booking-edit-form input[name="ignore_blocking_item_usage_restriction"]').parent().show();
               $('#booking-edit-form input[name="send_mail"]').parent().show();
             }
 
             load_booking_comment(booking_id, 'booking-edit-form');
+            load_booking_special_fields(booking_id, 'booking-edit-form');
           });
 
           //copy booking data to create field
