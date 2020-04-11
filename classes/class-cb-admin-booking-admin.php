@@ -648,7 +648,12 @@ class CB_Admin_Booking_Admin {
 
       $ignore_closed_days = !$booking_result['success'] && isset($data['ignore_closed_days']) ? $data['ignore_closed_days'] : null;
 
-      $send_mail = !$booking_result['success'] && isset($data['send_mail']) ? $data['send_mail'] : null;
+      if(!$booking_result) {
+        $send_mail = true;
+      }
+      else {
+        $send_mail = !$booking_result['success'] && isset($data['send_mail']) ? $data['send_mail'] : null;
+      }
 
       if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php')) {
         $render_ibiur_options = true;

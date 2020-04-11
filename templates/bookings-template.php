@@ -429,6 +429,8 @@ jQuery(document).ready(function ($) {
             $('#booking-edit-form input[name="date_end"]').attr('min', date_start);
             $('#booking-edit-form input[name="date_end"]').attr('max', date_end);
 
+            $('#booking-edit-form input[name="send_mail"]').attr('checked', true);
+
             //enable/disable date fields based on booking status
             var past = new Date(Date.parse(date_end)).setHours(23, 59, 59) < new Date();
             if(status == 'canceled' || status == 'blocked' || past) {
