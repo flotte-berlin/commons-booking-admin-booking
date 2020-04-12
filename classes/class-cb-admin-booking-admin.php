@@ -1067,7 +1067,7 @@ class CB_Admin_Booking_Admin {
 
       $booking_result = [
         'success' => true,
-        'message' => ___('BOOKING_COMMENT_UPDATED', 'commons-booking-admin-booking', 'The booking comment was successfully updated.')
+        'message' => ___('BOOKING_COMMENT_UPDATED', 'commons-booking-admin-booking', 'The booking was successfully updated.')
       ];
     }
 

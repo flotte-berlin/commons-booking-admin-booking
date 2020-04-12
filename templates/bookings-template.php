@@ -553,8 +553,8 @@ jQuery(document).ready(function ($) {
           var $table_row = $($table_body.find('tr')[table_row_index]);
 
           if(res.success) {
-            $table_row.find('td').eq(2).contents().get(0).nodeValue = payload.date_start;
-            $table_row.find('td').eq(3).contents().get(0).nodeValue = payload.date_end;
+            $table_row.find('td').eq(2).contents().get(0).nodeValue = $form.find('input[name="date_start"]').first().val();
+            $table_row.find('td').eq(3).contents().get(0).nodeValue = $form.find('input[name="date_end"]').first().val()
           }
           render_notice(res.success, res.message);
         }
