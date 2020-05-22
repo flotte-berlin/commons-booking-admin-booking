@@ -326,7 +326,7 @@ jQuery(document).ready(function ($) {
       url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
       type: 'POST',
       dataType: 'JSON',
-      data: {action : 'get_booking_comment', booking_id: booking_id},
+      data: {action : 'get_booking_comment', booking_id: booking_id, nonce: '<?= $nonce ?>'},
       error: function(res) {
         console.error('comment error:', res);
 
@@ -352,7 +352,7 @@ jQuery(document).ready(function ($) {
       url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
       type: 'POST',
       dataType: 'JSON',
-      data: {action : 'get_booking_special_fields', booking_id: booking_id},
+      data: {action : 'get_booking_special_fields', booking_id: booking_id, nonce: '<?= $nonce ?>'},
       error: function(res) {
         console.error('special fields error:', res);
 
@@ -543,7 +543,7 @@ jQuery(document).ready(function ($) {
         url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
         type: 'POST',
         dataType: 'JSON',
-        data: Object.assign({action : 'cb_admin_booking_edit' }, payload),
+        data: Object.assign({action : 'cb_admin_booking_edit', nonce: '<?= $nonce ?>' }, payload),
         error: function(res) {
           //console.error('booking error:', res);
           render_notice(res.success, res.message);

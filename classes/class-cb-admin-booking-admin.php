@@ -77,7 +77,10 @@ class CB_Admin_Booking_Admin {
   function check_nonce() {
     $actions_to_check = [
       'cb_admin_booking_serial',
-      'cb_admin_booking_user_search'
+      'cb_admin_booking_user_search',
+      'cb_admin_booking_edit',
+      'get_booking_comment',
+      'get_booking_special_fields'
     ];
 
     if( defined('DOING_AJAX') && DOING_AJAX) { //&& current_user_can('manage_options')
