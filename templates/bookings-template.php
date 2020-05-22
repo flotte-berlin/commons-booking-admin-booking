@@ -101,7 +101,7 @@ var $selectize = jQuery('select[name=user_id]').selectize({
         url: '<?= get_site_url(null, '', null) . '/wp-admin/admin-ajax.php' ?>',
         type: 'POST',
         dataType: 'JSON',
-        data: { action : 'cb_admin_booking_user_search' , q: query},
+        data: { action : 'cb_admin_booking_user_search' , q: query, nonce: '<?= $nonce ?>'},
         error: function() {
           callback();
         },
@@ -208,6 +208,7 @@ jQuery(document).ready(function ($) {
 
       });
       payload.action  ='cb_admin_booking_serial';
+      payload.nonce = '<?= $nonce ?>';
 
       jQuery.post(url, payload, function(response) {
         stop_loading();
