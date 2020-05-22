@@ -2,6 +2,8 @@
 
 class CB_Admin_Booking_Admin {
 
+  const NONCE_KEY = 'cb_admin_booking';
+
   /**
   * when the plugin is activated, add columns to bookings table in db, if they don't exist yet
   */
@@ -70,6 +72,35 @@ class CB_Admin_Booking_Admin {
       $this->render_booking_creation();
     }
 
+  }
+
+  function check_nonce() {
+    $actions_to_check = [
+      'cb_admin_booking_serial',
+      'cb_admin_booking_user_search'
+    ];
+
+    if( defined('DOING_AJAX') && DOING_AJAX) { //&& current_user_can('manage_options')
+
+      //is it one of the actions to check
+      if(in_array($_POST['action'], $actions_to_check)) {
+
+        //check nonce
+        if(isset($_POST['nonce'])) {
+          $nonce = sanitize_text_field($_POST['nonce']);
+
+          if(!wp_verify_nonce($nonce, self::NONCE_KEY)) {
+            wp_send_json_error([], 403);
+            return wp_die();
+          }
+        }
+        else {
+          wp_send_json_error([], 403);
+          return wp_die();
+        }
+      }
+
+    }
   }
 
   function validate_booking_create_form_input() {
@@ -663,6 +694,8 @@ class CB_Admin_Booking_Admin {
       else {
         $render_ibiur_options = false;
       }
+
+      $nonce = wp_create_nonce(self::NONCE_KEY);
 
       add_thickbox();
       include_once( CB_ADMIN_BOOKING_PATH . 'templates/bookings-template.php' );

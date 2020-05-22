@@ -28,6 +28,9 @@ add_action( 'wp_ajax_cb_admin_booking_edit', [$cb_admin_booking_admin, 'handle_b
 add_action( 'wp_ajax_get_booking_comment', [$cb_admin_booking_admin, 'get_booking_comment'] );
 add_action( 'wp_ajax_get_booking_special_fields', [$cb_admin_booking_admin, 'get_booking_special_fields'] );
 
+
+add_action( 'admin_init', [$cb_admin_booking_admin, 'check_nonce'], 10, 2);
+
 add_action( 'toplevel_page_cb_bookings', array($cb_admin_booking_admin, 'load_bookings_creation'));
 
 ?>
