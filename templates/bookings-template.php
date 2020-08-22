@@ -375,7 +375,8 @@ jQuery(document).ready(function ($) {
   });
 
   /*** edit booking ***/
-  var $table_body = $('table.buchungen tbody').first();
+  var $table = $('input[value="cb_bookings"]').parent().find('table').first();
+  var $table_body = $table.find('tbody').first();
 
   //add edit button
   if($table_body) {
