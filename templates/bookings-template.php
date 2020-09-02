@@ -53,7 +53,14 @@
         </div>
       </div>
 
-      <?php include( CB_ADMIN_BOOKING_PATH . 'templates/booking-details-template.php' ); ?>
+      <?php
+        if(cb_admin_booking\get_active_plugin_directory('commons-booking-item-usage-restriction') && method_exists('CB_Bookings_Gantt_Chart_Shortcode', 'create_item_chart_nonces')) {
+          $include_gantt_chart_button = true;
+        }
+
+        include( CB_ADMIN_BOOKING_PATH . 'templates/booking-details-template.php' );
+        $include_gantt_chart_button = false;
+      ?>
 
       <input style="float: right; width: 100px;" id="submit-booking" class="button action" value="<?= ___( 'EXECUTE', 'commons-booking-admin-booking', 'make it so') ?>" type="submit">
     </div>
@@ -102,6 +109,7 @@
   <form id="booking-edit-form">
     <input name="booking_id" type="hidden">
     <input name="table_row_index" type="hidden">
+
     <?php include( CB_ADMIN_BOOKING_PATH . 'templates/booking-details-template.php' ); ?>
 
     <input type="submit" id="submit-booking-edit" class="button" style="margin-top: 10px; float: right; width: 100px;" value="<?= ___( 'UPDATE', 'commons-booking-admin-booking', 'update') ?>">
