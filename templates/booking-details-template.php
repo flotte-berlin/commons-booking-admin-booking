@@ -13,7 +13,8 @@
       <div style="float: right;">
         <?php
           $chart_date_end = (new DateTime())->setTimestamp(strtotime($date_min->format('Y-m-d').'+ 2 months'));
-          echo do_shortcode('[cb_bookings_gantt_chart item_id="' . '56' . '" date_start="' . $date_min->format('Y-m-d') . '" date_end="' . $chart_date_end->format('Y-m-d') . '"]');
+          $chart_item_id = isset($cb_items[0]) ? $cb_items[0]->ID : '';
+          echo do_shortcode('[cb_bookings_gantt_chart item_id="' . $chart_item_id .'?>" date_start="' . $date_min->format('Y-m-d') . '" date_end="' . $chart_date_end->format('Y-m-d') . '"]');
         ?>
       </div>
     </div>
@@ -54,9 +55,6 @@
       $('.cb-booking-gantt-chart-button').click((ev) => {
         ev.preventDefault();
       });
-
-      $('.cb-booking-gantt-chart-button').attr('data-item_id', $('select[name="item_id"]').first().val());
-      $('.cb-booking-gantt-chart-button').attr('data-nonce', nonces[$('select[name="item_id"]').first().val()]);
 
       $('select[name="item_id"]').first().change(function() {
         console.log('change item to: ', $(this).val());
