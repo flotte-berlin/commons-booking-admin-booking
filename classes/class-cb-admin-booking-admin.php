@@ -86,7 +86,7 @@ class CB_Admin_Booking_Admin {
     if( defined('DOING_AJAX') && DOING_AJAX) { //&& current_user_can('manage_options')
 
       //is it one of the actions to check
-      if(in_array($_POST['action'], $actions_to_check)) {
+      if(isset($_POST['action']) && in_array($_POST['action'], $actions_to_check)) {
 
         //check nonce
         if(isset($_POST['nonce'])) {
