@@ -875,6 +875,20 @@ class CB_Admin_Booking_Admin {
   }
 
   /**
+ * check if thumbmail exists, if so, return it.
+ *
+ */
+  function get_thumb( $post_id ) {
+    if ( has_post_thumbnail( $post_id ) ) {
+      $thumb = get_the_post_thumbnail( $post_id, 'thumbnail' );
+    } else {
+      $thumb = "";
+    }
+
+    return $thumb;
+  }
+
+  /**
   * set booking vars on given CB_Booking instance to prepare sending an email
   */
   private function set_booking_vars( $cb_booking ) {
@@ -887,12 +901,12 @@ class CB_Admin_Booking_Admin {
     $b_vars['date_end'] = date_i18n( get_option( 'date_format' ), strtotime($cb_booking->date_end) );
     $b_vars['date_end_timestamp'] = strtotime($cb_booking->date_end);
     $b_vars['item_name'] = get_the_title ($cb_booking->item_id );
-    $b_vars['item_thumb'] = get_thumb( $cb_booking->item_id );
+    $b_vars['item_thumb'] = $this->get_thumb( $cb_booking->item_id );
     $b_vars['item_content'] =  get_post_meta( $cb_booking->item_id, 'commons-booking_item_descr', TRUE  );
     $b_vars['location_name'] = get_the_title ($cb_booking->location_id );
     $b_vars['location_content'] = '';
     $b_vars['location_address'] = $cb_booking->data->format_adress($cb_booking->location['address']);
-    $b_vars['location_thumb'] = get_thumb( $cb_booking->location_id );
+    $b_vars['location_thumb'] = $this->get_thumb( $cb_booking->location_id );
     $b_vars['location_contact'] = is_array($cb_booking->location['contact']) ? $cb_booking->location['contact']['string'] : $cb_booking->location['contact']; //due to change after CB 0.9.2.2
     $b_vars['location_openinghours'] = $cb_booking->location['openinghours'];
 
