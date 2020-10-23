@@ -13,7 +13,7 @@
       <div style="float: right;">
         <?php
           $chart_date_end = (new DateTime())->setTimestamp(strtotime($date_min->format('Y-m-d').'+ 2 months'));
-          $chart_item_id = isset($cb_items[0]) ? $cb_items[0]->ID : '';
+          $chart_item_id = isset($item_id) ? $item_id : (isset($cb_items[0]) ? $cb_items[0]->ID : '');
           echo do_shortcode('[cb_bookings_gantt_chart item_id="' . $chart_item_id .'?>" date_start="' . $date_min->format('Y-m-d') . '" date_end="' . $chart_date_end->format('Y-m-d') . '"]');
         ?>
       </div>
