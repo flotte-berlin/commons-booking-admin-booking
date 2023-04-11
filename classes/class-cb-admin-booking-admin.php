@@ -480,7 +480,7 @@ class CB_Admin_Booking_Admin {
 
         if($booking_id) {
           $booking_result['message'] = ___('BOOKING_CREATED', 'commons-booking-admin-booking', 'The booking was created successfully.');
-          $booking_result['message'] .= $send_mail ? ' Eine Bestätigungsmail wurde versandt.' : '';
+          $booking_result['message'] .= $data['send_mail'] ? ' ' . ___('EMAIL_SENT', 'commons-booking-admin-booking', 'Confirmation emails were sent.') : '';
         }
         else {
           $booking_result['success'] = false;
@@ -773,11 +773,26 @@ class CB_Admin_Booking_Admin {
     $cb_booking->user_id = $cb_booking->booking['user_id'];
     $cb_booking->hash = $cb_booking->booking['hash'];
 
-    $cb_booking->email_messages = $cb_booking->settings->get_settings( 'mail' );
+    $cb_booking->location = $cb_booking->data->get_location( $cb_booking->location_id );
+    $cb_booking->recv_copies = ( $cb_booking->location['recv_copies'] );
+    $cb_booking->location_email = (
+      count( $cb_booking->location['contact']['email'] ) > 0 ?
+      $cb_booking->location['contact']['email'] :
+      NULL
+    );
 
+    $cb_booking->email_messages = $cb_booking->settings->get_settings( 'mail' );
     $this->set_booking_vars($cb_booking);
 
+    //send user email
     $cb_booking->send_mail($cb_booking->user['email']);
+
+    //send location emails
+    if (!empty( $cb_booking->recv_copies ) && $cb_booking->location_email) {
+    foreach ($cb_booking->location_email as $email) {
+        $cb_booking->send_mail( $email, false );
+      }
+    }
   }
 
   function get_booking_comment() {
@@ -1106,7 +1121,7 @@ class CB_Admin_Booking_Admin {
           $this->save_special_fields($booking_id, $data['usage_during_restriction'], $data['exempt_from_limit']);
 
           $booking_result['message'] = ___('BOOKING_UPDATED', 'commons-booking-admin-booking', 'The booking was successfully updated.');
-          $booking_result['message'] .= $data['send_mail'] ? ' Eine Bestätigungsmail wurde versandt.' : '';
+          $booking_result['message'] .= $data['send_mail'] ? ' ' . ___('EMAIL_SENT', 'commons-booking-admin-booking', 'Confirmation emails were sent.') : '';
         }
 
       }
