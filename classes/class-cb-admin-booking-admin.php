@@ -4,6 +4,9 @@ class CB_Admin_Booking_Admin {
 
   const NONCE_KEY = 'cb_admin_booking';
 
+  public $cb_items;
+  public $valid_cb_item_ids;
+
   /**
   * when the plugin is activated, add columns to bookings table in db, if they don't exist yet
   */
@@ -618,7 +621,7 @@ class CB_Admin_Booking_Admin {
   */
   function render_booking_creation() {
 
-    $booking_result = null;
+    $booking_result = [];
 
     echo '<script>';
     echo 'var booking_result = null';
@@ -669,30 +672,30 @@ class CB_Admin_Booking_Admin {
       //var_dump($data);
 
       $date_min = new DateTime();
-      $date_start = !$booking_result['success'] && isset($data['date_start_valid']) ? $data['date_start_valid'] : new DateTime();
-      $date_end = !$booking_result['success'] && isset($data['date_end_valid']) ? $data['date_end_valid'] : new DateTime();
+      $date_start = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['date_start_valid']) ? $data['date_start_valid'] : new DateTime();
+      $date_end = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['date_end_valid']) ? $data['date_end_valid'] : new DateTime();
 
-      $user_id = !$booking_result['success'] && isset($data['user_id']) ? $data['user_id'] : null;
-      $user_name = !$booking_result['success'] && isset($data['user_name']) ? $data['user_name'] : null;
-      $item_id = !$booking_result['success'] && isset($data['item_id']) ? $data['item_id'] : null;
+      $user_id = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['user_id']) ? $data['user_id'] : null;
+      $user_name = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['user_name']) ? $data['user_name'] : null;
+      $item_id = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['item_id']) ? $data['item_id'] : null;
 
       $cb_items = $this->cb_items;
 
-      $comment = !$booking_result['success'] && isset($data['comment']) ? $data['comment'] : null;
+      $comment = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['comment']) ? $data['comment'] : null;
 
-      $ignore_closed_days = !$booking_result['success'] && isset($data['ignore_closed_days']) ? $data['ignore_closed_days'] : null;
+      $ignore_closed_days = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['ignore_closed_days']) ? $data['ignore_closed_days'] : null;
 
       if(!$booking_result) {
         $send_mail = true;
       }
       else {
-        $send_mail = !$booking_result['success'] && isset($data['send_mail']) ? $data['send_mail'] : null;
+        $send_mail = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['send_mail']) ? $data['send_mail'] : null;
       }
 
       if(cb_admin_booking\is_plugin_active('commons-booking-item-usage-restriction.php')) {
         $render_ibiur_options = true;
-        $usage_during_restriction = !$booking_result['success'] && isset($data['usage_during_restriction']) ? $data['usage_during_restriction'] : null;
-        $exempt_from_limit = !$booking_result['success'] && isset($data['exempt_from_limit']) ? $data['exempt_from_limit'] : null;
+        $usage_during_restriction = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['usage_during_restriction']) ? $data['usage_during_restriction'] : null;
+        $exempt_from_limit = (!isset($booking_result['success']) || !$booking_result['success']) && isset($data['exempt_from_limit']) ? $data['exempt_from_limit'] : null;
       }
       else {
         $render_ibiur_options = false;
